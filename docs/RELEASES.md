@@ -63,15 +63,13 @@ in the consolidated 0.7.0 update. Revisit this policy before the LTS support end
 
 ## Main branch protection
 
-Repository administrators configured `main` to require a pull request, one approving
-review, approval of the latest reviewable push, and resolved review conversations.
-New commits dismiss stale approvals. The branch must be up to date and the `build`
-check from the GitHub Actions app must pass. That check runs Python tests, migration
-validation, JavaScript syntax checks and both Minecraft target builds/tests.
-These rules apply to administrators too; force pushes and branch deletion are disabled.
-Do not bypass the rules for releases: merge the version bump by PR first, then tag
-the merged commit. GitHub settings are the authoritative protection state; this
-document records the intended policy, not an automatic installer for the rules.
+The repository owner now manages protection using the active **Protect Main** ruleset
+in GitHub Settings → Rules → Rulesets. A classic rule under Settings → Branches can
+also apply if retained. GitHub's active settings are authoritative; avoid duplicating
+or bypassing them in release scripts. Use a pull request, wait for required checks
+and reviews, then tag the merged main commit. The `build` check validates Python,
+JavaScript, migrations and both Minecraft targets. No deployment credential is
+needed for these checks.
 
 ## cPanel and Minecraft installation
 

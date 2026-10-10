@@ -69,3 +69,8 @@ The optional **local** roster path in the wizard is a separate Windows copy used
 by the exporter to label participant/operator evidence. A cPanel path will not work
 on Windows. Installing the picker roster does not enroll Minecraft players or grant
 any access rights.
+
+## Manual workflow
+
+For requests entirely from the website, use [website-initiated exports](WEBSITE-EXPORTS.md).
+This wizard remains available when the server connection is disabled or for local diagnostics.

@@ -2,6 +2,27 @@ import uuid
 from django.db import models
 
 
+class ExportServer(models.Model):
+    id = models.CharField(primary_key=True, max_length=64)
+    last_seen = models.DateTimeField()
+    learners = models.JSONField(default=list)
+    worlds = models.JSONField(default=list)
+
+
+class ExportJob(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    server = models.ForeignKey(ExportServer, on_delete=models.PROTECT)
+    requested_by = models.CharField(max_length=128)
+    created_at = models.DateTimeField(auto_now_add=True)
+    state = models.CharField(max_length=16, default='pending', db_index=True)
+    parameters = models.JSONField()
+    attempts = models.PositiveSmallIntegerField(default=0)
+    lease = models.UUIDField(null=True)
+    lease_until = models.DateTimeField(null=True)
+    error = models.CharField(max_length=200, blank=True)
+    bundle = models.ForeignKey('SessionBundle', null=True, on_delete=models.SET_NULL)
+
+
 class SessionBundle(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     digest = models.CharField(max_length=64, unique=True)

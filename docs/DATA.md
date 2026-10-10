@@ -39,3 +39,12 @@ Back up MySQL using the site's existing DB backup process. Preserve completed jo
 For SQLite, use its backup API or stop imports/Passenger before copying the database; do not assume an arbitrary live file copy is consistent. Store the backup privately and test a restore on a separate instance. Keep the Django secret in the account's secure configuration/backup process, not a public ZIP.
 
 No automatic purge policy is installed. The portal refuses new imports above its bundle-count/JSON-byte quotas; actual DB/backups require more disk. A retention/archive workflow must be chosen before those limits become operationally significant. Restoring source data and re-importing validated bundles remains possible, but original import audit timestamps may differ if rebuilding from scratch.
+
+## Website export queue (0.8.0)
+
+Optional website exports add server roster/world inventory and per-learner jobs to
+the existing private SQLite database. Credentials are stored separately: cPanel
+gets a SHA-256 worker-token digest file; the raw token and read-only database
+credential stay in private Windows files. Temporary bundles use the configured
+Windows spool and are removed after each cycle. See [setup, quotas, revocation and
+recovery](WEBSITE-EXPORTS.md). No source database is exposed to cPanel.

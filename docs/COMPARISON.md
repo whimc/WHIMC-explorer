@@ -3,6 +3,8 @@
 Open **Compare paths** from the session-library header. This view uses completed
 session bundles already imported into the private portal. It cannot fetch a missing
 player or a new date range directly from the Minecraft database.
+Use **Import session → Request server exports** to obtain missing evidence when
+[website exports](WEBSITE-EXPORTS.md) are configured, then return here to compare.
 
 1. Select **Study timezone**, then choose **From** and **Until**. Inputs use that
    named timezone (default UTC), independent of the computer timezone. From is inclusive; Until is exclusive. To include all
