@@ -28,6 +28,12 @@ class WebsiteWorkerTests(unittest.TestCase):
     def test_no_redirects_with_credentials(self):
         self.assertIsNone(NoRedirect().redirect_request(None,None,302,'',{},'https://other.invalid/'))
 
+    def test_index_requires_world_and_passes_it_to_exporter(self):
+        with self.assertRaises(ValueError):validated_job({**self.cfg,'requires_world':True},self.job)
+        world=self.cfg['worlds'][0]
+        job=validated_job({**self.cfg,'requires_world':True},{**self.job,'world':world})
+        self.assertIn('--world='+world,export_args(self.cfg,job,Path('output.json')))
+
     def test_world_filter_preserves_path_breaks(self):
         data=self.data
         first=data['positions'][0]

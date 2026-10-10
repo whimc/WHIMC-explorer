@@ -43,3 +43,36 @@ Map reuse copies only the image/bounds. It never copies source-world NPC UUIDs, 
 Use consistent world bounds across comparable sessions: coverage is a fixed 10x10 grid across those bounds. Changing bounds changes the denominator. Increment `catalog_version` when changing geometry or target definitions. Each imported session preserves its catalog, so later changes do not silently change earlier scores.
 
 Limits: PNG <=2 MB and <=8192 pixels per side; session bundle <=8 MB. Images are embedded per world, so a catalog with many aliases can exceed the bundle limit even though they share a source image. Use catalogs scoped to the worlds relevant to that export. Very large PNGs must be optimized before use; this helper does not resize maps automatically.
+
+## Large collections of existing maps
+
+From 0.8.1, `worker.json` can point its `catalog` setting at a small catalog index:
+
+```json
+{
+  "format": "whimc-explorer.catalog-index.v1",
+  "catalog_version": "site-maps-v1",
+  "worlds": {
+    "Mars": {"catalog_file": "catalogs/Mars.json"},
+    "LunarCrater": {"catalog_file": "catalogs/LunarCrater.json"}
+  }
+}
+```
+
+Each referenced file is an ordinary single-world catalog with its own version,
+bounds, optional embedded image and targets. Paths are relative to the index and
+must stay within its directory. Copy the index **and the entire catalogs folder**.
+The website requires one world for indexed catalogs; the worker supplies `--world`
+to the exporter so only that catalog reaches bundle validation. Existing image,
+target, sample and upload limits remain in force. Source query row limits still
+apply to the complete learner/time window before world filtering.
+
+Optional catalog `warnings` are carried into the exported bundle. Use them to
+identify inherited calibration or unreviewed POIs. Maps exceeding the 2 MB image
+cap need an appropriately prepared image or a coordinate-only catalog; do not
+silently change their calibration. Saved NPCs/WorldGuard regions are candidate
+targets, not automatically validated study POIs. Reused habitat images do not
+authorize guessing world names or copying source-world NPC UUIDs.
+
+The manual exporter accepts `--world Mars`; the old script wizard does not yet
+select indexed catalogs. For that wizard, use a single-world catalog file directly.

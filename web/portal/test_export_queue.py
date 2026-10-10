@@ -142,3 +142,11 @@ class ExportQueueTests(TestCase):
             form={**base,'start':'2023-11-14T09:00','end':'2023-11-14T12:00',**extra}
             self.assertEqual(self.client.post('/request-exports/',form,secure=True,REMOTE_USER='writer@illinois.edu').status_code,400)
         self.assertFalse(ExportJob.objects.exists())
+
+    def test_index_inventory_requires_world_selection(self):
+        response=self.worker('poll',dict(learners=self.roster,worlds=list(self.data['worlds']),requires_world=True))
+        self.assertEqual(response.status_code,200)
+        form=dict(server=self.server,players=[self.data['player_uuid']],timezone='UTC',start='2023-11-14T09:00',end='2023-11-14T12:00',world='')
+        self.assertEqual(self.client.post('/request-exports/',form,secure=True,REMOTE_USER='writer@illinois.edu').status_code,400)
+        form['world']=next(iter(self.data['worlds']))
+        self.assertEqual(self.client.post('/request-exports/',form,secure=True,REMOTE_USER='writer@illinois.edu').status_code,302)
