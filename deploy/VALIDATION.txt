@@ -51,3 +51,13 @@ PASS: Browser selection of synthetic study + location + seven-day window yielded
 the correct two learners and 26 unique samples. Existing local imports migrated.
 The web update requires migration 0003_study_labels. GitHub tag-triggered release
 workflow tests/builds both targets; cPanel/Minecraft installation stays manual.
+
+0.5.0 POI CONFIGURATION/TIMEZONE UPDATE:
+PASS: 25 portal tests and 18 exporter/version tests; 5 Java tests per target build.
+PASS: Configured POI radius/dwell copied into new bundles; invalid values rejected.
+PASS: Named-zone conversions, DST missing/repeated times, seven calendar days,
+      per-day schedule clipping and exclusion of interval endpoints/lunch.
+PASS: Synthetic browser comparison in Mountain afternoon returned 2 learners / 26
+      samples; Eastern afternoon excluded those sessions. POI details show the rule.
+      No captured browser errors or warnings. No new database migration.
+GitHub release publication is separate from cPanel/Minecraft installation.

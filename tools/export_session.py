@@ -11,6 +11,8 @@ from uuid import UUID
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "web"))
 from explorer_core.bundles import load_bundle, unique_keys, reject_constant
+from explorer_core.time_windows import parse_time, zone
+from poi_settings import configured_catalog
 
 
 def read_json(path, limit=8 * 1024 * 1024):
@@ -22,10 +24,7 @@ def read_json(path, limit=8 * 1024 * 1024):
 
 
 def utc_time(value):
-    parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
-    if parsed.tzinfo is None or parsed.microsecond:
-        raise ValueError("Use whole-second ISO times with Z or an explicit UTC offset")
-    return int(parsed.timestamp())
+    return parse_time(value)
 
 
 def source_rows(connection, player, start, end, regions=False):
@@ -104,6 +103,7 @@ def activity_rows(connection, server, player, start, end, sources):
 
 
 def assemble(config, catalog, player, label, start, end, positions, regions, journal, npc_complete=False, activities=None):
+    catalog = configured_catalog(config, catalog)
     server = config["server_id"]
     events = [{"id": f"{server}:region:{r['rowid']}", "uuid": player, "time": int(r["time"]),
                "world": r["world"], "kind": "region_enter", "target_id": r["region"]} for r in regions]
@@ -151,12 +151,16 @@ def main():
     parser.add_argument('--study', default='', help='Study name shared across learners')
     parser.add_argument('--location', default='', help='Study location, separate from Minecraft world')
     parser.add_argument('--session-name', default='', help='Human session/activity name, separate from learner label')
+    parser.add_argument('--timezone', help='IANA study timezone for offset-free start/end, e.g. America/New_York')
     parser.add_argument("--roster", help="Verified account roster; labels participant/operator sessions explicitly")
     parser.add_argument("--npc-complete", action="store_true", help="Operator confirms Citizens capture covered the whole window with no crash or loss")
     args = parser.parse_args()
     try:
         config, catalog = read_json(args.config), read_json(args.catalog)
-        player, start, end = str(UUID(args.player)), utc_time(args.start), utc_time(args.end)
+        study_timezone = args.timezone or config.get('study_timezone')
+        if study_timezone:
+            zone(study_timezone)
+        player, start, end = str(UUID(args.player)), parse_time(args.start, study_timezone), parse_time(args.end, study_timezone)
         if not 0 < end - start <= 7 * 86400:
             raise ValueError("Window must be positive and at most seven days")
         import pymysql
@@ -176,6 +180,8 @@ def main():
         blob = assemble(config, catalog, player, args.label, start, end, positions, regions, journal, args.npc_complete, activities)
         data = json.loads(blob)
         data.update(study=args.study, location=args.location, session_name=args.session_name)
+        if study_timezone:
+            data['study_timezone'] = study_timezone
         blob = json.dumps(data, allow_nan=False, separators=(',', ':')).encode()
         load_bundle(blob)
         if args.roster:

@@ -7,12 +7,17 @@
   function notice(text) { $('comparison-notice').textContent = text; $('comparison-notice').hidden = !text; }
   function clearResult() { generation++; result = null; background = null; $('comparison-result').hidden = true; }
   function invalidate() { clearResult(); $('selection').hidden = true; selectionWindow = null; }
-  function local(seconds) { const d = new Date(seconds*1000); return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,19); }
-  function times() {
-    const start = Math.floor(new Date($('range-start').value).getTime()/1000), end = Math.floor(new Date($('range-end').value).getTime()/1000);
-    if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) throw new Error('Choose a valid start and end time.');
-    return {start, end};
+  function local(seconds) {
+    const parts = new Intl.DateTimeFormat('en-CA',{timeZone:$('study-timezone').value,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).formatToParts(new Date(seconds*1000));
+    const p = Object.fromEntries(parts.map(part=>[part.type,part.value]));return `${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}:${p.second}`;
   }
+  function times() {
+    if(!$('range-start').value || !$('range-end').value)throw new Error('Choose a start and end time.');
+    const mode=$('daily-window').value;
+    const daily = mode === 'morning' ? ['09:00','12:00'] : mode === 'afternoon' ? ['13:00','16:00'] : mode === 'custom' ? [$('daily-start').value,$('daily-end').value] : ['',''];
+    return {local_start:$('range-start').value,local_end:$('range-end').value,timezone:$('study-timezone').value,daily_start:daily[0],daily_end:daily[1]};
+  }
+  function timezoneNote(){ $('timezone').textContent=`All entered dates and hours use ${$('study-timezone').value}, independent of this computer. Changing timezone keeps the entered clock times. Daily hours apply to each day in the range. End times are excluded.`; }
   async function read(url) {
     const response = await fetch(url, {credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'}});
     if (!(response.headers.get('content-type') || '').includes('application/json')) throw new Error('Could not read comparison data. Refresh and sign in again.');
@@ -43,7 +48,7 @@
       const w = times(), query = new URLSearchParams({...w,server:$('server-filter').value.trim(),study:$('study-filter').value,location:$('location-filter').value});
       const data = await read(document.body.dataset.optionsUrl+'?'+query);
       if (token !== generation) return;
-      sessions = data.sessions; selectionWindow = w;
+      sessions = data.sessions; selectionWindow = data.window;
       if (!sessions.length) { notice('No imported sessions overlap this range. Import the completed player sessions first.'); return; }
       options('compare-server', sessions.map(s=>s.server_id)); options('known-servers', sessions.map(s=>s.server_id));
       $('selection').hidden = false; worlds();
@@ -60,7 +65,8 @@
       const data = await read(document.body.dataset.pathsUrl+'?'+query); if(token !== generation) return;
       result=data; visible = new Set(data.players.map(p=>p.uuid)); $('comparison-result').hidden=false;
       $('comparison-world').textContent=`${data.server} / ${data.world}`;
-      $('comparison-window').textContent = `${new Date(data.start*1000).toLocaleString()} — ${new Date(data.end*1000).toLocaleString()} · ${data.samples.toLocaleString()} unique samples`;
+      const display = t=>new Date(t*1000).toLocaleString(undefined,{timeZone:data.window.timezone});
+      $('comparison-window').textContent = `${display(data.start)} — ${display(data.end)} · ${data.window.timezone}${data.window.daily_start ? ' · daily '+data.window.daily_start+'–'+data.window.daily_end : ''} · ${data.samples.toLocaleString()} unique samples`;
       $('route-legend').replaceChildren();
       data.players.forEach((p,i)=>{
         const label=document.createElement('label'), input=document.createElement('input'), swatch=document.createElement('i'); input.type='checkbox'; input.checked=true;
@@ -85,13 +91,14 @@
     });ctx.restore();ctx.setLineDash([]);ctx.strokeStyle='#9cc3cb55';ctx.strokeRect(left,top,pw,ph);
   }
   $('range-form').addEventListener('submit',find);$('compare-server').addEventListener('change',worlds);$('compare-world').addEventListener('change',players);$('compare-submit').addEventListener('click',compare);
-  for(const id of ['range-start','range-end','server-filter','study-filter','location-filter'])$(id).addEventListener('input',invalidate);
+  for(const id of ['range-start','range-end','server-filter','study-filter','location-filter','study-timezone','daily-window','daily-start','daily-end'])$(id).addEventListener('input',invalidate);
   new ResizeObserver(draw).observe($('comparison-map'));
-  $('timezone').textContent=`Times use your browser timezone: ${Intl.DateTimeFormat().resolvedOptions().timeZone}. The end time is excluded.`;
+  timezoneNote(); $('study-timezone').addEventListener('change',timezoneNote);
+  $('daily-window').addEventListener('change',()=>{for(const id of ['daily-start-wrap','daily-end-wrap'])$(id).hidden=$('daily-window').value!=='custom';});
   $('use-week').addEventListener('click',()=>{
     if(!$('study-week').value){notice('Choose the first date of the study week.');return;}
-    const start=new Date($('study-week').value+'T00:00:00'), end=new Date(start);end.setDate(end.getDate()+7);
-    $('range-start').value=local(start.getTime()/1000);$('range-end').value=local(end.getTime()/1000);find();
+    const date=$('study-week').value, end=new Date(date+'T00:00:00Z');end.setUTCDate(end.getUTCDate()+7);
+    $('range-start').value=date+'T00:00:00';$('range-end').value=end.toISOString().slice(0,10)+'T00:00:00';find();
   });
   read(document.body.dataset.optionsUrl).then(data=>{
     for(const [id,items] of [['study-filter',data.studies],['location-filter',data.locations]]) for(const value of items){const option=document.createElement('option');option.value=value;option.textContent=value;$(id).append(option);}

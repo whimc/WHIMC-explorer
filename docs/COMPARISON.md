@@ -4,10 +4,11 @@ Open **Compare paths** from the session-library header. This view uses completed
 session bundles already imported into the private portal. It cannot fetch a missing
 player or a new date range directly from the Minecraft database.
 
-1. Choose **From** and **Until**. Inputs use the browser's displayed timezone and
-   convert to UTC timestamps. From is inclusive; Until is exclusive. To include all
+1. Select **Study timezone**, then choose **From** and **Until**. Inputs use that
+   named timezone (default UTC), independent of the computer timezone. From is inclusive; Until is exclusive. To include all
    of October 9, choose October 9 at 00:00 through October 10 at 00:00.
-2. Optionally enter an exact server ID, then click **Find sessions**. Dates initially
+2. Choose **Daily study hours** (all day, morning, afternoon or custom), optionally
+   enter an exact server ID, then click **Find sessions**. Dates initially
    cover the 24 hours ending at the newest imported session.
 3. Select the server and exact world name. Select one or more player checkboxes.
    Each checkbox includes all that player's matching imported sessions.
@@ -20,7 +21,9 @@ range or select fewer players if a limit is reached. No downsampling is performe
 Player matching uses UUID and server, not display label. Operator accounts remain
 selectable for testing and have the label supplied by their imported roster.
 
-Routes are clipped to the exact chosen time window and world. Teleports, missing
+Routes are clipped to the exact chosen time window, daily study hours and world.
+Daily hours apply separately to each date, including across daylight-saving changes.
+See [TIMEZONES.md](TIMEZONES.md) for scheduling examples. Teleports, missing
 samples, implausible movement, world changes and separate sessions break the line.
 Overlapping copies with identical sample IDs are counted once per player; conflicting
 copies are rejected. Routes are never joined across exports merely because the player
@@ -50,7 +53,9 @@ python manage.py collectstatic --noinput
 ```
 
 Migration `0002_world_names` indexes world names for existing imports without
-changing their payloads or stored scores. Restart the Python app and hard-refresh.
+changing their payloads or stored scores. Migration `0003_study_labels` adds study
+metadata; the timezone/configuration update needs no further schema migration.
+Restart the Python app and hard-refresh.
 This website update does not require reinstalling the Minecraft plugin.
 
 The loopback `seed_demo` command now imports two synthetic players for comparison.

@@ -8,16 +8,32 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_GET
 from .models import SessionBundle
+from explorer_core.time_windows import parse_time, daily_intervals, in_intervals, zone
 
 
 def window(request):
     try:
-        start, end = int(request.GET['start']), int(request.GET['end'])
+        if 'local_start' in request.GET or 'local_end' in request.GET:
+            tz = request.GET.get('timezone','UTC')
+            zone(tz)
+            start, end = parse_time(request.GET['local_start'],tz), parse_time(request.GET['local_end'],tz)
+        else:
+            start, end = int(request.GET['start']), int(request.GET['end'])
         if not 0 <= start < end < 100_000_000_000 or end - start > 366 * 86400:
-            raise ValueError()
+            raise ValueError('Choose a valid date/time range of at most 366 days.')
         return start, end
-    except (KeyError, TypeError, ValueError):
+    except (KeyError, TypeError):
         raise ValueError('Choose a valid date/time range of at most 366 days.')
+
+
+def schedule(request):
+    start, end = window(request)
+    tz = request.GET.get('timezone','UTC')
+    daily_start, daily_end = request.GET.get('daily_start',''), request.GET.get('daily_end','')
+    intervals = daily_intervals(start,end,tz,daily_start,daily_end)
+    if not intervals:
+        raise ValueError('The daily study hours do not intersect this date range.')
+    return start,end,intervals,{'start':start,'end':end,'timezone':tz,'daily_start':daily_start,'daily_end':daily_end}
 
 
 @require_GET
@@ -27,12 +43,12 @@ def page(request):
 
 @require_GET
 def options(request):
-    if 'start' not in request.GET and 'end' not in request.GET:
+    if not any(key in request.GET for key in ('start','end','local_start','local_end')):
         return JsonResponse({'latest': SessionBundle.objects.aggregate(latest=Max('end'))['latest'],
                              'studies': list(SessionBundle.objects.exclude(study='').order_by('study').values_list('study', flat=True).distinct()),
                              'locations': list(SessionBundle.objects.exclude(location='').order_by('location').values_list('location', flat=True).distinct())})
     try:
-        start, end = window(request)
+        start, end, intervals, selected = schedule(request)
     except ValueError as exc:
         return JsonResponse({'error': str(exc)}, status=400)
     query = SessionBundle.objects.filter(start__lt=end, end__gt=start).order_by('-start', 'id')
@@ -44,10 +60,13 @@ def options(request):
     rows = list(query.values('id', 'player_uuid', 'player_label', 'server_id', 'start', 'end', 'world_names', 'study', 'location', 'session_name')[:201])
     if len(rows) > 200:
         return JsonResponse({'error': 'More than 200 sessions overlap this range. Narrow the dates or specify a server.'}, status=400)
-    return JsonResponse({'sessions': rows})
+    rows = [row for row in rows if any(row['start'] < b and row['end'] > a for a,b in intervals)]
+    return JsonResponse({'sessions': rows, 'window': selected})
 
 
-def compare(records, start, end, world):
+def compare(records, start, end, world, intervals=None):
+    intervals = intervals if intervals is not None else [(start,end)]
+    interval_starts = [a for a,b in intervals]
     if not records or len(records) > 20:
         raise ValueError('Select between 1 and 20 imported sessions.')
     if len({r.server_id for r in records}) != 1:
@@ -75,7 +94,7 @@ def compare(records, start, end, world):
         player['sessions'].append(str(record.id))
         previous, segment = None, []
         for p in sorted(data['positions'], key=lambda p: (p['time'], p['id'])):
-            if p['world'] != world or not start <= p['time'] < end:
+            if p['world'] != world or not start <= p['time'] < end or not in_intervals(p['time'],intervals,interval_starts):
                 previous = None; segment = []
                 continue
             signature = (p['time'], p['world'], p['x'], p['y'], p['z'], p.get('break_before', False))
@@ -106,7 +125,7 @@ def compare(records, start, end, world):
 @require_GET
 def paths(request):
     try:
-        start, end = window(request)
+        start, end, intervals, selected = schedule(request)
         world = request.GET.get('world', '')
         if not world or len(world) > 128:
             raise ValueError('Select a world.')
@@ -120,6 +139,8 @@ def paths(request):
         records = list(SessionBundle.objects.filter(id__in=ids, start__lt=end, end__gt=start).defer('payload', 'metrics').order_by('start', 'id'))
         if len(records) != len(ids):
             raise ValueError('A selected session is missing or outside the date range. Reload the choices.')
-        return JsonResponse(compare(records, start, end, world))
+        result = compare(records, start, end, world, intervals)
+        result['window'] = selected
+        return JsonResponse(result)
     except ValueError as exc:
         return JsonResponse({'error': str(exc)}, status=400)

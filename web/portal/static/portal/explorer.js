@@ -15,6 +15,7 @@
     } else {
       const visits = state.data.metrics.proximity_visits.find(p => p.id === item.id && p.world === item.world);
       if (visits) line(body, 'Proximity', `${visits.estimated_dwell_seconds}s estimated dwell`);
+      if (item.radius !== undefined) line(body, 'Visit rule', `Within ${item.radius} blocks in 3D for ${item.minimum_dwell_seconds} continuous sampled seconds`);
       const clicks = state.data.bundle.events.filter(e => e.kind === 'npc_interaction' && e.target_id === item.id && e.world === item.world);
       if (item.kind === 'npc') line(body, 'Recorded interactions', state.data.bundle.availability.npc_interaction ? `${clicks.length} in the whole window${state.data.bundle.partial_sources?.includes('npc_interaction') ? ' · partial capture' : ''}` : 'Telemetry unavailable');
       line(body, 'Catalog ID', item.id);
@@ -26,8 +27,9 @@
     const button = document.createElement('button'); button.type = 'button'; button.className = 'marker-entry';
     button.textContent = title; button.addEventListener('click', () => showMarker(item)); return button;
   }
-  const date = seconds => new Date(seconds * 1000).toLocaleString(undefined, {dateStyle: "medium", timeStyle: "short"});
-  const clock = seconds => new Date(seconds * 1000).toLocaleTimeString(undefined, {hour: "2-digit", minute: "2-digit", second: "2-digit", timeZoneName: "short"});
+  let displayTimezone = 'UTC';
+  const date = seconds => new Date(seconds * 1000).toLocaleString(undefined, {dateStyle: "medium", timeStyle: "short", timeZone: displayTimezone});
+  const clock = seconds => new Date(seconds * 1000).toLocaleTimeString(undefined, {hour: "2-digit", minute: "2-digit", second: "2-digit", timeZoneName: "short", timeZone: displayTimezone});
   function notice(message) { $("notice").textContent = message; $("notice").hidden = !message; }
   async function read(url, signal) {
     const response = await fetch(url, {credentials: "same-origin", signal, headers: {Accept: "application/json"}});
@@ -74,13 +76,16 @@
     try {
       const result = await read(session.url, state.controller.signal);
       if (state.selected !== session.id) return;
+      displayTimezone = result.bundle.study_timezone || 'UTC';
+      if(![...$('display-timezone').options].some(o=>o.value===displayTimezone)){const option=document.createElement('option');option.value=displayTimezone;option.textContent=displayTimezone;$('display-timezone').append(option);}
+      $('display-timezone').value=displayTimezone; list();
       state.data = result; $("empty").hidden = true; $("review").hidden = false;
       $("server-label").textContent = `SESSION REVIEW / ${session.server}`;
       $("player-label").textContent = session.label;
       $('study-label').textContent = [result.labels.study, result.labels.location, result.labels.session_name].filter(Boolean).join(' · ');
       $('edit-study-labels').hidden = !session.labels_url;
       if (session.labels_url) $('edit-study-labels').href = session.labels_url;
-      $("session-time").textContent = `${date(session.start)} — ${date(session.end)} · ${result.bundle.session_source === "recorded" ? "Recorded session" : "Selected evaluation window"}`;
+      $("session-time").textContent = `${date(session.start)} — ${date(session.end)} · ${displayTimezone} · ${result.bundle.session_source === "recorded" ? "Recorded session" : "Selected evaluation window"}`;
       $("download").href = session.download;
       $("world").replaceChildren();
       for (const name of Object.keys(result.bundle.worlds)) {
@@ -192,6 +197,11 @@
   }
   $("session-filter").addEventListener("input",list);
   $("load-more").addEventListener("click",async()=>{$("load-more").disabled=true;state.page++;await library();$("load-more").disabled=false;});
+  $('display-timezone').addEventListener('change',()=>{
+    displayTimezone=$('display-timezone').value;list();
+    const b=state.data.bundle;$('session-time').textContent=`${date(b.start)} — ${date(b.end)} · ${displayTimezone} · ${b.session_source==='recorded'?'Recorded session':'Selected evaluation window'}`;
+    updateWorld();
+  });
   $("world").addEventListener("change",updateWorld);
   for(const id of ["show-pois","show-grid","show-observations","show-tools","timeline"])$(id).addEventListener("input",draw);
   $('marker-close').addEventListener('click', () => $('marker-dialog').close());

@@ -10,5 +10,10 @@
   "activity_sources": {
     "observation": false,
     "science_tool": false
-  }
+  },
+  "poi_visit": {
+    "radius_blocks": 4,
+    "minimum_dwell_seconds": 4
+  },
+  "study_timezone": "UTC"
 }

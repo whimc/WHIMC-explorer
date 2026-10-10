@@ -37,11 +37,13 @@ bundles. Old imports start with blank labels rather than inferred study assignme
 
 ## Review a study week
 
-1. Open **Compare paths** and select the study and study location.
+1. Open **Compare paths** and select the study, study location and **Study timezone**.
 2. Choose the first day in **Week beginning**, then **Use this week**. The range is
    local midnight on that date to local midnight seven calendar days later; it follows
-   daylight-saving changes in the browser timezone. The end is exclusive.
-3. Choose the server and world, select learners 1–5, and compare.
+   daylight-saving changes in the selected study timezone. The end is exclusive.
+3. Select **Daily study hours**: all day, morning (09:00-12:00), afternoon
+   (13:00-16:00), or custom. These hours apply separately to each date.
+4. Choose the server and world, select learners 1–5, and compare.
 
 This uses all matching imported sessions for each chosen learner. The existing limit
 is eight learners / twenty sessions per comparison; split a large week into smaller
@@ -49,6 +51,9 @@ windows if needed. A week is a date filter, not parsed from text such as “Week
 It uses recorded session times, not upload times. Use arbitrary From/Until values
 when the study week has a different duration. Data still needs to be exported/imported
 first; the website has no live MySQL connection.
+
+See [TIMEZONES.md](TIMEZONES.md) for Eastern/Mountain examples and daylight-saving
+behavior. The server and evaluator computer timezone do not determine the filter.
 
 ## Updating an existing deployment
 

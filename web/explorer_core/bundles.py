@@ -6,6 +6,7 @@ import re
 import struct
 from uuid import UUID
 from .scoring import analyze, label, number, validate
+from .time_windows import zone
 
 FORMAT = "whimc-explorer.bundle.v1"
 MAX_BYTES = 8 * 1024 * 1024
@@ -46,6 +47,8 @@ def validate_bundle(data):
         for field in ('study', 'location', 'session_name'):
             if field in data and data[field] != '':
                 label(data[field])
+        if 'study_timezone' in data:
+            zone(data['study_timezone'])
         if data["session_source"] not in {"manual-window", "recorded"}:
             raise ValueError("Unknown session source")
         if not isinstance(data.get("warnings", []), list) or len(data.get("warnings", [])) > 20:

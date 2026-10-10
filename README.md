@@ -4,8 +4,37 @@ Private, after-session path evaluation. Position Tracker remains the movement so
 
 Repository: [whimc/WHIMC-explorer](https://github.com/whimc/WHIMC-explorer).
 
+## Day-to-day workflow: who does what, and where?
+
+**Yes: a local export is currently required before new server data is available on
+the website.** The website generates maps, scores and comparisons from imported JSON;
+it cannot reach the Windows server's local MySQL database or journal by itself.
+
+1. **Minecraft server:** Position Tracker records movement in MySQL; Explorer records
+   enrolled learners' session events/NPC clicks in its local journal. Existing
+   Observations/Science Tools plugins can log their evidence to MySQL.
+2. **After the study, on Windows:** an operator runs `tools/export_session.py` with
+   private configuration, a reviewed map catalog, one learner UUID/label, study/location,
+   and the study's time window/timezone. It reads sources without changing them and
+   writes a new JSON bundle. Repeat for the learners/windows needed; the current CLI
+   exports one learner at a time. Let pending plugin writes finish first.
+3. **Private website:** an authorized importer clicks **Import session** and uploads
+   those JSON files. The website validates evidence, recomputes scores and stores it
+   in its private SQLite database. No evaluator needs MySQL credentials.
+4. **Evaluator:** select an imported session, or **Compare paths** → study/location →
+   timezone/week/morning or afternoon → world → learners. Changing a website filter
+   needs no new export if the relevant evidence is already imported. Missing learners
+   or dates do require another export/import.
+
+The exporter needs access to the source database and journal; cPanel has neither.
+It is technically possible to automate export/delivery with a local service or job,
+but that is not installed. There is no automatic sync or website-to-server connection.
+GitHub release automation updates software downloads, not research data. Keep MySQL
+private; do not expose it publicly just to make the website generate exports.
+
 ## Documentation
 
+- [Study timezones and morning/afternoon filters](docs/TIMEZONES.md)
 - [Version bumps, automatic GitHub releases and deployment](docs/RELEASES.md)
 - [Study locations, session names and week-based review](docs/STUDIES.md)
 - [Minecraft 1.21.11 and 26.x compatibility](docs/COMPATIBILITY.md)
@@ -79,7 +108,7 @@ Replace synthetic worlds/targets in `tools/catalog.example.json`. NPC IDs are Ci
 python tools/export_session.py --config local-config.json --catalog catalog.json --player 00000000-0000-4000-8000-000000000001 --label 'Loaner 01' --start 2026-10-09T18:00:00Z --end 2026-10-09T19:00:00Z --journal 'D:/Minecraft/plugins/WHIMC-Explorer/journal' --output session-01.json
 ```
 
-Replace sample paths, UUID and times. Times require `Z` or an explicit UTC offset. Start is inclusive; end exclusive. Output must be a new file. Upload via **Import session** as an authorized importer.
+Replace sample paths, UUID and times. Times require `Z`, an explicit UTC offset, or a named study timezone supplied with `--timezone` / `study_timezone`. Start is inclusive; end exclusive. Output must be a new file. Upload via **Import session** as an authorized importer.
 
 `--npc-complete` asserts that capture covered the whole window without crash/loss; journal availability/rejection checks are extra safeguards, not proof. Otherwise observed clicks are partial lower bounds, and no click data means unavailable. Set `region_capture_complete: true` only after confirming the retained tracker's WorldGuard integration was active throughout. Empty tables do not establish coverage.
 
@@ -101,8 +130,27 @@ Includes global waypoints (`player_uuid IS NULL`), excludes personal waypoints a
 
 A POI is a cataloged NPC or Journey waypoint with an X/Y/Z location in a specific
 world. **The default is a 4-block 3D radius and at least 4 continuous sampled seconds
-inside it.** Each POI can override `radius` and `minimum_dwell_seconds`; review those
-values and change `catalog_version` when changing thresholds.
+inside it.** Change both values in the Windows exporter's private `local-config.json`
+(copied from `tools/export-config.example.json`):
+
+```json
+"poi_visit": {
+  "radius_blocks": 4,
+  "minimum_dwell_seconds": 4
+}
+```
+
+This block applies to all NPC/waypoint targets in each new export; regions are
+unaffected. For example, use 6 and 10 for six blocks and ten seconds. This is an
+**exporter setting**, not the Minecraft plugin's capture config or cPanel environment.
+Effective values are written into the exported catalog, with an automatically
+derived catalog-version suffix. Existing imports retain their original thresholds.
+Re-export/import to apply a different rule to historical evidence; changed bundles
+create distinct entries, so do not sum overlapping copies.
+
+For different thresholds per POI, omit the entire `poi_visit` block and use each
+catalog target's `radius`/`minimum_dwell_seconds`. With the block present, its values
+override the individual catalog thresholds. A selected POI's overlay shows its rule.
 
 - Distance includes height (Y), not just the overhead X/Z map. The radius boundary is included.
 - Dwell adds intervals whose two consecutive samples are both inside the radius.
@@ -128,6 +176,21 @@ In **Compare paths**, choose study + location, use **Week beginning**, select th
 world and learners 1–5, then compare their paths on one map. Weeks filter recorded
 dates, not upload dates or text in a session name. Data must already be imported.
 See [the study guide](docs/STUDIES.md) for examples and label-backup behavior.
+
+### Morning/afternoon and timezones
+
+Choose the study location's named timezone: `America/New_York` for Eastern,
+`America/Denver` for Mountain with daylight saving, or `America/Phoenix` for Arizona.
+The server can remain on Central and evaluator computers can use any timezone.
+Stored evidence is UTC; the comparison page converts the explicitly chosen study
+clock times. It defaults visibly to UTC, never the evaluator computer's timezone.
+
+Select **Morning 09:00–12:00** or **Afternoon 13:00–16:00** under **Daily study hours**,
+then **Use this week**. Only samples inside those hours on each selected date appear;
+lunch and the other group are excluded. Daylight-saving changes are handled per date.
+On the exporter, use `--timezone America/New_York` with offset-free start/end times,
+or set `study_timezone` in its private configuration. See [TIMEZONES.md](docs/TIMEZONES.md)
+for examples, UTC conversion and ambiguous-clock handling.
 
 ### Other metrics and maintenance
 
