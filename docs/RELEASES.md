@@ -34,9 +34,13 @@ python tools/version.py patch
 It updates `VERSION` and the Maven project version together. Use patch for compatible
 fixes, minor for added functionality, major for breaking contracts; document migration
 and compatibility changes. It never commits, pushes, tags or deploys on its own.
-Commit/review changes, push main, and after its checks pass create a new tag:
+Commit changes on a feature branch, push that branch and open a pull request. After
+review, merge through GitHub and wait for main's checks to pass. Fetch the merged
+main commit before creating a new tag:
 
 ```powershell
+git switch main
+git pull --ff-only origin main
 git tag v0.4.0
 git push origin v0.4.0
 ```
@@ -49,6 +53,18 @@ The release job alone has repository contents-write permission. GitHub Actions m
 be allowed by the organization's policy; no personal token is needed by the workflow.
 Dependabot checks Actions, pip and Maven dependencies weekly and proposes PRs; it
 does not auto-merge or auto-deploy updates. Review Minecraft API bumps for compatibility.
+
+## Main branch protection
+
+Repository administrators configured `main` to require a pull request, one approving
+review, approval of the latest reviewable push, and resolved review conversations.
+New commits dismiss stale approvals. The branch must be up to date and the `build`
+check from the GitHub Actions app must pass. That check runs Python tests, migration
+validation, JavaScript syntax checks and both Minecraft target builds/tests.
+These rules apply to administrators too; force pushes and branch deletion are disabled.
+Do not bypass the rules for releases: merge the version bump by PR first, then tag
+the merged commit. GitHub settings are the authoritative protection state; this
+document records the intended policy, not an automatic installer for the rules.
 
 ## cPanel and Minecraft installation
 

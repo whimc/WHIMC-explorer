@@ -1,5 +1,22 @@
 {% load static %}<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Import session · WHIMC Explorer</title><link rel="stylesheet" href="{% static 'portal/explorer.css' %}"></head><body>
 <header><a class="brand" href="{% url 'index' %}"><span class="brand-mark">W</span>WHIMC <b>Explorer</b></a><span>{{ request.evaluator }}</span></header>
 <main class="import-page"><a href="{% url 'index' %}">← Session library</a><div class="eyebrow">AFTER-SESSION IMPORT</div><h1>Bring the session into view.</h1><p class="muted">Choose the JSON bundle created by the Windows exporter. Its path samples, map catalog and recorded interactions stay together.</p>
+<details class="export-help" open>
+<summary>How to generate a file to upload</summary>
+<p>Run the exporter on the Windows Minecraft server, or a Windows computer with access to its records. This website displays uploaded bundles; it cannot fetch the server's local database or journal files.</p>
+<ol>
+<li><strong>Prepare once.</strong> Download and extract the source ZIP from the <a href="https://github.com/whimc/WHIMC-explorer/releases">release matching your installed portal</a>. Open PowerShell in that extracted project folder. Use Python 3.12 and install the exporter dependencies in a virtual environment:
+<pre><code>py -3.12 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r web/requirements.txt -r tools/requirements.txt</code></pre>
+Copy <code>tools/export-config.example.json</code> to your private <code>local-config.json</code>. Set the server ID and tracker database details with your server administrator; use a database account with SELECT-only access. Use your reviewed <code>catalog.json</code> containing the correct worlds, map bounds and POIs. The packaged example catalog is synthetic.</li>
+<li><strong>Choose the learner and study window.</strong> After play has finished and records have been saved, use the learner's Minecraft UUID and the study location's timezone. For example, <code>America/New_York</code> means Eastern and <code>America/Denver</code> means Mountain with daylight saving. The server and evaluator computer can remain in other timezones.</li>
+<li><strong>Export one learner.</strong> Replace every example value below, including UUID, dates, names and journal path. Run this command on one line in PowerShell:
+<pre><code>.\.venv\Scripts\python.exe tools/export_session.py --config local-config.json --catalog catalog.json --player 00000000-0000-4000-8000-000000000001 --label 'Learner 01' --study 'Fall habitat study' --location 'Study school' --session-name 'Week 1 morning' --timezone America/New_York --start 2026-10-09T09:00:00 --end 2026-10-09T12:00:00 --journal 'D:/Minecraft/plugins/WHIMC-Explorer/journal' --output learner-01-morning.json</code></pre>
+Enter the database password at the local prompt. The output is saved in the current folder; use a new filename for each export. The start is included and the end excluded. For afternoon, use <code>13:00:00</code> through <code>16:00:00</code>. Daylight-saving offsets are calculated from the selected timezone and date.</li>
+<li><strong>Upload the resulting JSON below.</strong> Choose <code>learner-01-morning.json</code>, then select <strong>Import session</strong>. Repeat the export and upload for each learner. Use the same study and location labels to find them together in <strong>Compare paths</strong>.</li>
+</ol>
+<p>Upload only the generated session bundle. Keep database passwords, <code>local-config.json</code>, raw databases and journal folders on the server or your private computer. If you only evaluate sessions, ask your server administrator for the exported JSON.</p>
+<p><a href="https://github.com/whimc/WHIMC-explorer#readme">Full setup and export guide</a> · <a href="https://github.com/whimc/WHIMC-explorer/blob/main/docs/TIMEZONES.md">Study timezone guide</a></p>
+</details>
 {% if error %}<div class="notice" role="alert">{{ error }}</div>{% endif %}
 <form method="post" enctype="multipart/form-data">{% csrf_token %}<label for="bundle">Explorer session bundle</label><input id="bundle" name="bundle" type="file" accept=".json,application/json" required><p class="muted small">One player and time window · Maximum 8 MB · Reimporting the same bundle does not duplicate it.</p><button type="submit" class="button">Import session</button></form></main></body></html>
