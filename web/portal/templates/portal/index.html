@@ -2,7 +2,7 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>WHIMC Explorer · Session review</title><link rel="stylesheet" href="{% static 'portal/explorer.css' %}">
-<script src="{% static 'portal/explorer.js' %}" defer></script></head>
+<script src="{% static 'portal/explorer.js' %}" defer></script><link rel="stylesheet" href="{% static 'portal/game.css' %}"></head>
 <body data-sessions-url="{% url 'sessions' %}">
 <header><a class="brand" href="{% url 'index' %}"><span class="brand-mark">W</span><span>WHIMC <b>Explorer</b></span></a>
 <div class="header-right"><a class="secondary" href="{% url 'compare' %}">Compare paths</a>{% if demo %}<span class="badge">SYNTHETIC DEMO</span>{% else %}<span class="badge">EVALUATOR ACCESS</span>{% endif %}<span class="identity">{{ request.evaluator }}</span>{% if request.can_import %}<a class="button" href="{% url 'import' %}">Import session</a>{% endif %}</div></header>

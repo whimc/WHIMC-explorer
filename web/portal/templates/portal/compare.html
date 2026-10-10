@@ -1,7 +1,7 @@
 {% load static %}
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>WHIMC Explorer · Compare paths</title><link rel="stylesheet" href="{% static 'portal/explorer.css' %}"><link rel="stylesheet" href="{% static 'portal/compare.css' %}"><script src="{% static 'portal/compare.js' %}" defer></script></head>
+<title>WHIMC Explorer · Compare paths</title><link rel="stylesheet" href="{% static 'portal/explorer.css' %}"><link rel="stylesheet" href="{% static 'portal/compare.css' %}"><script src="{% static 'portal/compare.js' %}" defer></script><link rel="stylesheet" href="{% static 'portal/game.css' %}"></head>
 <body data-options-url="{% url 'comparison-options' %}" data-paths-url="{% url 'comparison-paths' %}">
 <header><a class="brand" href="{% url 'index' %}"><span class="brand-mark">W</span><span>WHIMC <b>Explorer</b></span></a><div class="header-right"><a class="secondary" href="{% url 'index' %}">Session library</a><span>{{ request.evaluator }}</span></div></header>
 <main class="comparison-page"><div class="eyebrow">COMPARE EXPLORATION</div><h1>Different players. One map.</h1><p class="muted">Compare paths from imported sessions. Choose a time window, then a server, world and up to eight players.</p>
