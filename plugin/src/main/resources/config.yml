@@ -1,4 +1,4 @@
-# Local development alpha. No web requests or database credentials are used.
+# Capture stays local. Optional website exports use outbound HTTPS via the local exporter.
 # Configure an explicit study roster, enable capture, then restart the test server.
 capture:
   enabled: false
@@ -8,3 +8,12 @@ capture:
   max-journal-files: 100000
   minimum-free-megabytes: 64
   shutdown-wait-seconds: 5
+
+# Install the matching source release and Python environment once; see docs/WEBSITE-EXPORTS.md.
+# Use absolute Windows paths with forward slashes. Keep credentials in private files.
+website-exports:
+  enabled: false
+  python: ''
+  script: ''
+  config: ''
+  poll-seconds: 60

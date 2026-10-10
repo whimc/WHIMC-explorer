@@ -25,6 +25,7 @@ public final class ExplorerPlugin extends JavaPlugin implements Listener {
     private final Map<UUID, UUID> sessions = new HashMap<>();
     private final Set<UUID> roster = new HashSet<>();
     private Journal journal;
+    private WebsiteExports websiteExports;
     private String serverId;
     private boolean citizensEnabled;
     private long lastRejectionWarning;
@@ -32,6 +33,15 @@ public final class ExplorerPlugin extends JavaPlugin implements Listener {
     @Override
     public void onEnable() {
         saveDefaultConfig();
+        if (getConfig().getBoolean("website-exports.enabled", false)) {
+            try {
+                websiteExports = new WebsiteExports(getConfig().getString("website-exports.python", ""),
+                    getConfig().getString("website-exports.script", ""), getConfig().getString("website-exports.config", ""),
+                    getConfig().getInt("website-exports.poll-seconds", 60), message -> getLogger().warning(message));
+            } catch (IllegalArgumentException e) {
+                getLogger().severe("Website exports disabled: " + e.getMessage());
+            }
+        }
         if (!getConfig().getBoolean("capture.enabled", false)) {
             getLogger().info("Capture is disabled. Configure a study roster before enabling on a test server.");
             return;
@@ -60,7 +70,7 @@ public final class ExplorerPlugin extends JavaPlugin implements Listener {
             citizensEnabled = true;
         }
         for (Player player : Bukkit.getOnlinePlayers()) startSession(player, "capture_started_mid_session");
-        getLogger().info("Local capture enabled for " + roster.size() + " players. No network delivery is configured.");
+        getLogger().info("Local capture enabled for " + roster.size() + " players.");
     }
 
     private int bounded(String key, int fallback, int min, int max) {
@@ -121,6 +131,7 @@ public final class ExplorerPlugin extends JavaPlugin implements Listener {
 
     @Override
     public void onDisable() {
+        if (websiteExports != null) websiteExports.close();
         if (journal == null) return;
         for (Player player : Bukkit.getOnlinePlayers()) record(player, "session_end", null, "capture_stopped", player.getLocation());
         if (!journal.close(getConfig().getInt("capture.shutdown-wait-seconds", 5) * 1000L)) {
@@ -133,6 +144,7 @@ public final class ExplorerPlugin extends JavaPlugin implements Listener {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!sender.hasPermission("whimcexplorer.admin")) return true;
         if (args.length != 1 || !args[0].equalsIgnoreCase("status")) return false;
+        sender.sendMessage("Website exports: " + (websiteExports == null ? "disabled" : websiteExports.status()));
         if (journal == null) {
             sender.sendMessage("WHIMC Explorer: capture disabled.");
         } else {

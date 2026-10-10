@@ -1,10 +1,11 @@
 {% load static %}<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Import session · WHIMC Explorer</title><link rel="stylesheet" href="{% static 'portal/explorer.css' %}"><link rel="stylesheet" href="{% static 'portal/game.css' %}"></head><body>
 <header><a class="brand" href="{% url 'index' %}"><span class="brand-mark">W</span>WHIMC <b>Explorer</b></a><span>{{ request.evaluator }}</span></header>
 <main class="import-page"><a href="{% url 'index' %}">← Session library</a><div class="eyebrow">AFTER-SESSION IMPORT</div><h1>Bring the session into view.</h1><p class="muted">Choose the JSON bundle created by the Windows exporter. Its path samples, map catalog and recorded interactions stay together.</p>
+<section class="export-help"><h2>Export directly from your server</h2><p>Choose learners, a world and a completed study window. The Explorer plugin generates and uploads the sessions when the server is online.</p><a class="button" href="{% url 'request-exports' %}">Request server exports</a><p class="muted">Requires the administrator to enable website exports in Explorer. Manual export and upload remain available below.</p></section>
 {% include 'portal/export_wizard.html' %}
 <details class="export-help">
 <summary>How to generate a file to upload</summary>
-<p>Run the exporter on the Windows Minecraft server, or a Windows computer with access to its records. This website displays uploaded bundles; it cannot fetch the server's local database or journal files.</p>
+<p>For manual exports, run the exporter on the Windows Minecraft server, or a Windows computer with access to its records. With website exports configured, use Request server exports above instead.</p>
 <ol>
 <li><strong>Prepare once.</strong> Download and extract the source ZIP from the <a href="https://github.com/whimc/WHIMC-explorer/releases">release matching your installed portal</a>. Open PowerShell in that extracted project folder. Use Python 3.12 and install the exporter dependencies in a virtual environment:
 <pre><code>py -3.12 -m venv .venv

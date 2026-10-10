@@ -1,6 +1,6 @@
 # Illinois cPanel deployment
 
-Target: `https://whimcproject.web.illinois.edu/explorer/`, Python **3.12.14**, named NetID evaluators and after-session imports. The owner confirmed the IRB log-data determination and accepts the provider's infrastructure; the goal is to eliminate separate EC2 service costs.
+Target: `https://whimcproject.web.illinois.edu/explorer/`, Python **3.12.14**, named NetID evaluators and after-session imports. Optional [website-initiated exports](docs/WEBSITE-EXPORTS.md) use outbound requests from the existing Explorer plugin. The owner confirmed the IRB log-data determination and accepts the provider's infrastructure; the goal is to eliminate separate EC2 service costs.
 
 Illinois documents [Python/Passenger](https://answers.illinois.edu/illinois/page.php?id=84995) and [named-user Shibboleth](https://answers.illinois.edu/illinois/84989). This app uses those facilities without a custom port or background worker. Account integration remains untested; no remote changes have been made.
 
@@ -48,7 +48,7 @@ Generate the secret privately: `python -c "import secrets; print(secrets.token_u
 
 ## NetID protection
 
-Merge `deploy/.htaccess.example` into the **new Explorer directory's** generated configuration. Replace its fail-closed placeholder with exact NetIDs. Preserve Passenger directives. Protect all Explorer routes, including API, imports and exports.
+Merge `deploy/.htaccess.example` into the **new Explorer directory's** generated configuration. Replace its fail-closed placeholder with exact NetIDs. Preserve Passenger directives. Protect all Explorer routes, including API, imports and exports. If enabling website exports, follow the separate guide's exact two-path machine exception; those paths require server credentials in Python instead of NetID.
 
 For this WordPress site, back up `/home/whimcproject/public_html/.htaccess` and add the following ABOVE `# BEGIN WordPress`. It excludes both the Shibboleth callback and all Explorer routes from WordPress rewriting. Without the Explorer exclusion, the landing page can load while the session API/import/download routes return WordPress 404 pages:
 

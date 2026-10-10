@@ -6,33 +6,38 @@ Repository: [whimc/WHIMC-explorer](https://github.com/whimc/WHIMC-explorer).
 
 ## Day-to-day workflow: who does what, and where?
 
-**Yes: a local export is currently required before new server data is available on
-the website.** The website generates maps, scores and comparisons from imported JSON;
-it cannot reach the Windows server's local MySQL database or journal by itself.
+**After one-time setup, evaluators can request exports entirely from the website.**
+The existing Explorer plugin checks cPanel over outbound HTTPS, runs the reviewed
+exporter locally and uploads the completed bundles. MySQL stays private.
 
-1. **Minecraft server:** Position Tracker records movement in MySQL; Explorer records
-   enrolled learners' session events/NPC clicks in its local journal. Existing
-   Observations/Science Tools plugins can log their evidence to MySQL.
-2. **After the study, on Windows:** an operator runs `tools/export_session.py` with
-   private configuration, a reviewed map catalog, one learner UUID/label, study/location,
-   and the study's time window/timezone. It reads sources without changing them and
-   writes a new JSON bundle. Repeat for the learners/windows needed; the current CLI
-   exports one learner at a time. Let pending plugin writes finish first.
-3. **Private website:** an authorized importer clicks **Import session** and uploads
-   those JSON files. The website validates evidence, recomputes scores and stores it
-   in its private SQLite database. No evaluator needs MySQL credentials.
-4. **Evaluator:** select an imported session, or **Compare paths** → study/location →
-   timezone/week/morning or afternoon → world → learners. Changing a website filter
-   needs no new export if the relevant evidence is already imported. Missing learners
-   or dates do require another export/import.
+1. **Administrator, once:** install the matching Explorer JAR and Python source
+   release on Windows, configure local read-only database access, roster and map
+   catalog, then pair this server with cPanel. See [website export setup](docs/WEBSITE-EXPORTS.md).
+2. **Minecraft server:** Position Tracker records movement in MySQL; Explorer records
+   enrolled learners' session events/NPC clicks in its journal. Existing Observations
+   and Science Tools plugins can log their evidence to MySQL.
+3. **After the study, on the website:** an authorized importer opens **Import session
+   → Request server exports**, chooses the server, named learners, world, study
+   timezone and completed start/end times, then supplies study/location/session names.
+   Queue morning (09:00–12:00) and afternoon (13:00–16:00) separately. Wait for pending
+   plugin writes to finish before requesting results.
+4. **Explorer plugin:** while Minecraft is running, it polls about once a minute,
+   processes one learner per cycle and imports results automatically. Offline servers
+   leave requests pending. Refresh the request page for status and session links.
+5. **Evaluator:** open the session library or **Compare paths**, then choose the
+   study/week/world and learners. Already-imported evidence can be filtered without
+   another export. New learners or dates require a new request.
 
-The exporter needs access to the source database and journal; cPanel has neither.
-It is technically possible to automate export/delivery with a local service or job,
-but that is not installed. There is no automatic sync or website-to-server connection.
-GitHub release automation updates software downloads, not research data. Keep MySQL
-private; do not expose it publicly just to make the website generate exports.
+The Windows server still needs Python and the exporter installed once, but users do
+not run scripts for this workflow. cPanel runs no background service and has no MySQL
+password. Manual export/upload remains available through the
+[export script wizard](docs/EXPORT-WIZARD.md) if website exports are disabled.
+GitHub release automation updates software downloads, not research data.
 
 ## Documentation
+
+- [Website-initiated exports: pairing, setup, operation and troubleshooting](docs/WEBSITE-EXPORTS.md)
+- [Manual export script wizard and multi-learner uploads](docs/EXPORT-WIZARD.md)
 
 - [Study timezones and morning/afternoon filters](docs/TIMEZONES.md)
 - [Version bumps, automatic GitHub releases and deployment](docs/RELEASES.md)
@@ -57,14 +62,14 @@ Built against the [26.x server snapshot](https://github.com/whimc/qrf-whimc-serv
 
 Implemented:
 
-- Minecraft plugin: enrolled UUID roster, session boundaries, teleports, Citizens right-clicks, bounded asynchronous journal. Capture disabled until configured; no database credentials or network listener.
+- Minecraft plugin: enrolled UUID roster, session boundaries, teleports, Citizens right-clicks, bounded asynchronous journal. Capture disabled until configured; optional website export polling stays off the game thread. No inbound network listener.
 - Windows exporter: parameterized, read-only Position Tracker queries for one player/window, local Explorer events, validated JSON output.
 - Comparison view: imported date/time window, server/world and up to eight players on one calibrated map; deduplicated source samples and conservative path breaks.
 - Evaluator portal: Python 3.12.14 / Django 5.2 LTS, NetID allowlist, separate import permission, session library, overhead path/timeline, optional PNG basemaps, POI dwell, NPC interactions, region entries, quality indicators and downloads.
 - Journey catalog helper: global waypoints from a consistent SQLite snapshot, with explicit domain UUID/world mapping. No Journey completion hook yet.
 - WorldGuard adapter: reads existing Position Tracker region-entry records when the operator confirms capture was active. No new WorldGuard listener.
 
-Flow: `Tracker MySQL + Explorer journal + reviewed POIs -> Windows export -> NetID browser upload -> cPanel portal`.
+Flow: `NetID export request -> cPanel queue <- Explorer HTTPS poll -> local export -> HTTPS upload -> session library`.
 
 The JAR belongs on Minecraft. The Python application belongs on cPanel; it is not a WordPress plugin. See [CPANEL-SETUP.md](CPANEL-SETUP.md).
 

@@ -1,8 +1,12 @@
 from django.urls import path
 from portal import views
 from portal import comparison
+from portal import export_queue
 
 urlpatterns = [
+    path('request-exports/', export_queue.page, name='request-exports'),
+    path('api/worker/poll/', export_queue.poll, name='worker-poll'),
+    path('api/worker/result/', export_queue.result, name='worker-result'),
     path("", views.index, name="index"),
     path("compare/", comparison.page, name="compare"),
     path("api/comparison/options/", comparison.options, name="comparison-options"),

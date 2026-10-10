@@ -8,6 +8,14 @@ class EvaluatorAccess:
         self.get_response = get_response
 
     def __call__(self, request):
+        from .export_queue import WORKER_PATHS, authenticate
+        if request.path_info in WORKER_PATHS:
+            request.worker_server = authenticate(request)
+            if not request.worker_server:
+                return HttpResponseForbidden('A valid server credential over HTTPS is required.')
+            response = self.get_response(request)
+            response['Cache-Control'] = 'no-store'
+            return response
         if settings.DEMO:
             try:
                 local = ipaddress.ip_address(request.META.get("REMOTE_ADDR", "")).is_loopback

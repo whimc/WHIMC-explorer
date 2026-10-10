@@ -1,0 +1,18 @@
+{% load static %}<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Request exports · WHIMC Explorer</title><link rel="stylesheet" href="{% static 'portal/explorer.css' %}"><link rel="stylesheet" href="{% static 'portal/game.css' %}"></head><body>
+<header><a class="brand" href="{% url 'index' %}"><span class="brand-mark">W</span>WHIMC <b>Explorer</b></a><span>{{ request.evaluator }}</span></header>
+<main class="import-page"><a href="{% url 'import' %}">← Import and export tools</a><h1>Request a server export</h1><p>Choose learners and a completed study window. Explorer generates and imports their sessions when the Minecraft server is online. Refresh this page to see progress.</p>
+{% if error %}<div class="notice" role="alert">{{ error }}</div>{% endif %}
+{% if servers %}<form method="get"><label>Server<select name="server">{% for s in servers %}<option value="{{ s.id }}" {% if s.id == server.id %}selected{% endif %}>{{ s.id }}</option>{% endfor %}</select></label><button class="button">Choose server</button></form>
+<p>Last contact: {{ server.last_seen|date:"Y-m-d H:i:s T" }}. Requests wait if the server is offline.</p>
+<form method="post">{% csrf_token %}<input type="hidden" name="server" value="{{ server.id }}">
+<fieldset><legend>Learners (choose up to 50)</legend><div class="learner-options">{% for learner in server.learners %}<label><input type="checkbox" name="players" value="{{ learner.uuid }}"> {{ learner.name }}{% if learner.role == 'operator' %} — operator{% endif %}</label>{% endfor %}</div></fieldset>
+<label>World<select name="world"><option value="">All catalog worlds</option>{% for world in server.worlds %}<option>{{ world }}</option>{% endfor %}</select></label>
+<label>Study timezone<select name="timezone"><option>America/Chicago</option><option>America/New_York</option><option>America/Denver</option><option>America/Los_Angeles</option><option>America/Phoenix</option><option>UTC</option></select></label>
+<p>Use the study location's clock. For morning enter 09:00–12:00; for afternoon submit a separate request for 13:00–16:00. Times that repeat or do not exist at a daylight-saving change are rejected.</p>
+<label>Start (included)<input type="datetime-local" name="start" required></label><label>End (excluded)<input type="datetime-local" name="end" required></label>
+<label>Study<input name="study" maxlength="128" placeholder="Fall habitat study"></label><label>Location<input name="location" maxlength="128" placeholder="Study school"></label><label>Session name<input name="session_name" maxlength="128" placeholder="Week 1 morning"></label>
+<button class="button">Queue exports</button></form>
+{% else %}<div class="notice">No export servers connected yet. Ask your administrator to enable website exports in the Explorer plugin and configure the cPanel worker endpoints.</div>{% endif %}
+<h2>Recent requests</h2><p><a href="{% url 'request-exports' %}{% if server %}?server={{ server.id }}{% endif %}">Refresh status</a></p>
+{% for job in jobs %}<article class="export-help"><strong>{{ job.parameters.label }} · {{ job.parameters.session_name|default:"Study window" }}</strong><p>{{ job.server_id }} · {{ job.parameters.study }} · {{ job.created_at|date:"Y-m-d H:i:s T" }} · {{ job.state }} (attempt {{ job.attempts }}/3)</p>{% if job.bundle_id %}<a href="{% url 'index' %}?session={{ job.bundle_id }}">View session</a>{% endif %}{% if job.error %}<p role="alert">{{ job.error }}</p>{% endif %}</article>{% empty %}<p>No requests yet.</p>{% endfor %}
+</main></body></html>
