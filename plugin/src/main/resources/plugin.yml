@@ -1,5 +1,5 @@
 name: WHIMC-Explorer
-version: ${project.version}
+version: ${project.version}${artifact.suffix}
 main: edu.whimc.explorer.ExplorerPlugin
 api-version: '${minecraft.api}'
 description: Local session and NPC interaction capture; Position Tracker remains the movement source.

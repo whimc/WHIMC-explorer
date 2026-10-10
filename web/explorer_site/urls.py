@@ -8,6 +8,7 @@ urlpatterns = [
     path("api/comparison/options/", comparison.options, name="comparison-options"),
     path("api/comparison/paths/", comparison.paths, name="comparison-paths"),
     path("import/", views.import_bundle, name="import"),
+    path('sessions/<uuid:bundle_id>/labels/', views.study_labels, name='study-labels'),
     path("api/sessions/", views.sessions, name="sessions"),
     path("api/sessions/<uuid:bundle_id>/", views.detail, name="detail"),
     path("exports/<uuid:bundle_id>/", views.download, name="download"),

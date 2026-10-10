@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>edu.whimc</groupId>
   <artifactId>WHIMC-Explorer</artifactId>
-  <version>0.3.0</version>
+  <version>0.4.0</version>
   <name>WHIMC Explorer</name>
   <description>Local session and interaction capture for WHIMC Explorer</description>
   <properties>
@@ -11,7 +11,7 @@
     <paper.version>26.2.build.132-stable</paper.version>
     <citizens.version>2.0.44-20261008.185736-5</citizens.version>
     <minecraft.api>26.2</minecraft.api>
-    <artifact.suffix></artifact.suffix>
+    <artifact.suffix>-mc26.x</artifact.suffix>
   </properties>
   <repositories>
     <repository><id>papermc</id><url>https://repo.papermc.io/repository/maven-public/</url></repository>

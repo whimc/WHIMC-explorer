@@ -17,3 +17,8 @@ class SessionBundle(models.Model):
     payload = models.JSONField()
     metrics = models.JSONField()
     world_names = models.JSONField(default=list)
+    study = models.CharField(max_length=128, blank=True, default='', db_index=True)
+    location = models.CharField(max_length=128, blank=True, default='', db_index=True)
+    session_name = models.CharField(max_length=128, blank=True, default='')
+    labels_updated_by = models.CharField(max_length=128, blank=True, default='')
+    labels_updated_at = models.DateTimeField(null=True, blank=True)

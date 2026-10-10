@@ -212,5 +212,8 @@
       "tool": "thermometer",
       "text": "Synthetic measurement: -20 \u00b0C"
     }
-  ]
+  ],
+  "study": "Synthetic habitat study",
+  "location": "Demo school",
+  "session_name": "Week 1 exploration"
 }

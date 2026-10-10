@@ -6,6 +6,8 @@ Repository: [whimc/WHIMC-explorer](https://github.com/whimc/WHIMC-explorer).
 
 ## Documentation
 
+- [Version bumps, automatic GitHub releases and deployment](docs/RELEASES.md)
+- [Study locations, session names and week-based review](docs/STUDIES.md)
 - [Minecraft 1.21.11 and 26.x compatibility](docs/COMPATIBILITY.md)
 - [Date/world/player path comparisons and update deployment](docs/COMPARISON.md)
 - [Build and pilot validation record](deploy/VALIDATION.txt)
@@ -18,7 +20,9 @@ Repository: [whimc/WHIMC-explorer](https://github.com/whimc/WHIMC-explorer).
 
 Recent helpers: `tools/map_catalog.py` reuses map calibration for newly named worlds; exporter `--roster` labels participant/operator accounts in the existing portal. Neither requires a plugin or website update. Verified operational rosters and maps stay under ignored `private-data/`.
 
-## Pilot release 0.3.0
+## Pilot releases
+
+Current release version: [VERSION](VERSION). [Versioned downloads](https://github.com/whimc/WHIMC-explorer/releases) provide separate `mc1.21.11` and `mc26.x` JARs plus the shared web application. Tests run on main/PR changes; matching version tags publish tested prereleases. See the release guide above for bumping versions and deploying.
 
 Built against the [26.x server snapshot](https://github.com/whimc/qrf-whimc-server-local/tree/83d200c1a71274567d8e230bfc4e7b0e05bd64d5): Paper 26.2 build 132 / Java 25, Citizens 2.0.44, Journey 1.3.9 and WorldGuard 7.0.17. Compilation uses the exact Paper API build and a timestamp-pinned Citizens API. The 26.x local pilot verified capture and the owner verified the imported paths. A separate Paper 1.21.11 / Java 21 build is available; its live server integration remains unverified. See the compatibility guide above.
 
@@ -37,7 +41,7 @@ The JAR belongs on Minecraft. The Python application belongs on cPanel; it is no
 
 ## Build, tests and local preview
 
-JDK 25 / Maven: `mvn -f plugin/pom.xml package`. For Paper 1.21.11 use `mvn -f plugin/pom.xml '-Pmc-1.21.11' package`. Output: `plugin/target/WHIMC-Explorer-0.3.0.jar`. Paper and Citizens are supplied by the server.
+JDK 25 / Maven: `mvn -f plugin/pom.xml package`. For Paper 1.21.11 use `mvn -f plugin/pom.xml '-Pmc-1.21.11' package`. Output: `plugin/target-mc26.x/WHIMC-Explorer-<version>-mc26.x.jar`. Paper and Citizens are supplied by the server.
 
 Create a Python 3.12 virtualenv, install `web/requirements.txt`; the Windows exporter additionally needs `tools/requirements.txt`. From this project directory in PowerShell:
 
@@ -92,6 +96,40 @@ python tools/journey_catalog.py --database journey-snapshot.sqlite --catalog cat
 Includes global waypoints (`player_uuid IS NULL`), excludes personal waypoints and cached paths. Review default 4-block radius / 4-second dwell and bump the catalog version. MySQL-backed Journey needs a separate adapter; reviewed catalog JSON is supported now.
 
 ## Score semantics and maintenance
+
+### What counts as a POI visit?
+
+A POI is a cataloged NPC or Journey waypoint with an X/Y/Z location in a specific
+world. **The default is a 4-block 3D radius and at least 4 continuous sampled seconds
+inside it.** Each POI can override `radius` and `minimum_dwell_seconds`; review those
+values and change `catalog_version` when changing thresholds.
+
+- Distance includes height (Y), not just the overhead X/Z map. The radius boundary is included.
+- Dwell adds intervals whose two consecutive samples are both inside the radius.
+  A lone sample does not establish a visit. One uninterrupted run must meet the threshold;
+  two separate 2-second stops do not meet a 4-second threshold.
+- Leaving the radius, changing world, a sample gap over 10 seconds, movement over
+  20 blocks/second, or a captured teleport/session break resets the continuous run.
+- “POI visits: 2 / 5” means two distinct qualifying NPC/waypoint targets out of five
+  cataloged in the selected world, not two total return visits. With no world samples,
+  visit status is unavailable. Estimated total dwell can include several short stops.
+- An NPC click is separate recorded evidence; WorldGuard region entries are separate
+  events. A proximity visit does not prove conversation, task completion or learning.
+
+### Study/session names
+
+`--label` names the **learner**, not the study. Add `--study`, `--location`, and
+`--session-name` to group exports, for example: `Fall 2026 Habitat Study` / `Lincoln
+School` / `Week 3 — Mars habitat building`, while keeping `Learner 03` as the learner
+label. Authorized importers can edit these study labels on existing sessions in the
+portal. The original evidence and UUID remain unchanged.
+
+In **Compare paths**, choose study + location, use **Week beginning**, select the
+world and learners 1–5, then compare their paths on one map. Weeks filter recorded
+dates, not upload dates or text in a session name. Data must already be imported.
+See [the study guide](docs/STUDIES.md) for examples and label-backup behavior.
+
+### Other metrics and maintenance
 
 Coverage counts sampled cells in a fixed 10x10 world grid. POI visits require continuous sampled 3D proximity at catalog radius/dwell. Gaps over 10 seconds, speeds over 20 blocks/second, world changes and captured teleport/session boundaries break paths and dwell. Duplicate source IDs deduplicate; conflicts reject. Missing telemetry is unavailable, not zero; partial source fractions are omitted. Clicks and proximity do not establish dialogue completion or learning.
 

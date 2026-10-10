@@ -28,7 +28,9 @@ def page(request):
 @require_GET
 def options(request):
     if 'start' not in request.GET and 'end' not in request.GET:
-        return JsonResponse({'latest': SessionBundle.objects.aggregate(latest=Max('end'))['latest']})
+        return JsonResponse({'latest': SessionBundle.objects.aggregate(latest=Max('end'))['latest'],
+                             'studies': list(SessionBundle.objects.exclude(study='').order_by('study').values_list('study', flat=True).distinct()),
+                             'locations': list(SessionBundle.objects.exclude(location='').order_by('location').values_list('location', flat=True).distinct())})
     try:
         start, end = window(request)
     except ValueError as exc:
@@ -36,7 +38,10 @@ def options(request):
     query = SessionBundle.objects.filter(start__lt=end, end__gt=start).order_by('-start', 'id')
     if request.GET.get('server'):
         query = query.filter(server_id=request.GET['server'])
-    rows = list(query.values('id', 'player_uuid', 'player_label', 'server_id', 'start', 'end', 'world_names')[:201])
+    for key in ('study', 'location'):
+        if request.GET.get(key):
+            query = query.filter(**{key: request.GET[key]})
+    rows = list(query.values('id', 'player_uuid', 'player_label', 'server_id', 'start', 'end', 'world_names', 'study', 'location', 'session_name')[:201])
     if len(rows) > 200:
         return JsonResponse({'error': 'More than 200 sessions overlap this range. Narrow the dates or specify a server.'}, status=400)
     return JsonResponse({'sessions': rows})

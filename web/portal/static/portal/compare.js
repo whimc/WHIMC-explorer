@@ -34,13 +34,13 @@
       const label = document.createElement('label'); label.className = 'player-choice';
       const input = document.createElement('input'); input.type = 'checkbox'; input.value = uuid; input.dataset.ids = JSON.stringify(group.map(s=>s.id)); input.addEventListener('change',clearResult);
       const text = document.createElement('span'); text.textContent = [...new Set(group.map(s=>s.player_label))].join(' / ');
-      const detail = document.createElement('small'); detail.textContent = `${group.length} imported session(s) · ${uuid}`; text.append(detail); label.append(input,text); $('player-choices').append(label);
+      const detail = document.createElement('small'); detail.textContent = `${group.length} imported session(s) · ${[...new Set(group.map(s=>s.session_name).filter(Boolean))].join(' / ')} · ${uuid}`; text.append(detail); label.append(input,text); $('player-choices').append(label);
     }
   }
   async function find(event) {
     event?.preventDefault(); invalidate(); notice(''); const token = generation;
     try {
-      const w = times(), query = new URLSearchParams({...w,server:$('server-filter').value.trim()});
+      const w = times(), query = new URLSearchParams({...w,server:$('server-filter').value.trim(),study:$('study-filter').value,location:$('location-filter').value});
       const data = await read(document.body.dataset.optionsUrl+'?'+query);
       if (token !== generation) return;
       sessions = data.sessions; selectionWindow = w;
@@ -85,8 +85,15 @@
     });ctx.restore();ctx.setLineDash([]);ctx.strokeStyle='#9cc3cb55';ctx.strokeRect(left,top,pw,ph);
   }
   $('range-form').addEventListener('submit',find);$('compare-server').addEventListener('change',worlds);$('compare-world').addEventListener('change',players);$('compare-submit').addEventListener('click',compare);
-  for(const id of ['range-start','range-end','server-filter'])$(id).addEventListener('input',invalidate);
+  for(const id of ['range-start','range-end','server-filter','study-filter','location-filter'])$(id).addEventListener('input',invalidate);
   new ResizeObserver(draw).observe($('comparison-map'));
   $('timezone').textContent=`Times use your browser timezone: ${Intl.DateTimeFormat().resolvedOptions().timeZone}. The end time is excluded.`;
-  read(document.body.dataset.optionsUrl).then(data=>{if(data.latest){$('range-start').value=local(data.latest-86400);$('range-end').value=local(data.latest);return find();}notice('Import a session to begin comparing paths.');}).catch(error=>notice(error.message));
+  $('use-week').addEventListener('click',()=>{
+    if(!$('study-week').value){notice('Choose the first date of the study week.');return;}
+    const start=new Date($('study-week').value+'T00:00:00'), end=new Date(start);end.setDate(end.getDate()+7);
+    $('range-start').value=local(start.getTime()/1000);$('range-end').value=local(end.getTime()/1000);find();
+  });
+  read(document.body.dataset.optionsUrl).then(data=>{
+    for(const [id,items] of [['study-filter',data.studies],['location-filter',data.locations]]) for(const value of items){const option=document.createElement('option');option.value=value;option.textContent=value;$(id).append(option);}
+    if(data.latest){$('range-start').value=local(data.latest-86400);$('range-end').value=local(data.latest);return find();}notice('Import a session to begin comparing paths.');}).catch(error=>notice(error.message));
 })();

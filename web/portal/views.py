@@ -7,6 +7,21 @@ from django.views.decorators.http import require_GET, require_http_methods
 from .models import SessionBundle
 from .storage import store_bundle
 import json
+from django.utils import timezone
+from .forms import StudyLabelsForm
+
+
+@require_http_methods(['GET', 'POST'])
+def study_labels(request, bundle_id):
+    if not request.can_import:
+        return HttpResponseForbidden('Only authorized importers can edit study labels.')
+    record = get_object_or_404(SessionBundle, pk=bundle_id)
+    form = StudyLabelsForm(request.POST if request.method == 'POST' else None,
+                          initial={key: getattr(record, key) for key in ('study', 'location', 'session_name')})
+    if request.method == 'POST' and form.is_valid():
+        SessionBundle.objects.filter(pk=record.pk).update(**form.cleaned_data, labels_updated_by=request.evaluator, labels_updated_at=timezone.now())
+        return redirect(reverse('index') + '?session=' + str(record.id))
+    return render(request, 'portal/study_labels.html', {'form': form, 'record': record}, status=400 if form.is_bound and not form.is_valid() else 200)
 
 
 @require_GET
@@ -46,6 +61,8 @@ def sessions(request):
     records = query[(page - 1) * 50:page * 50]
     return JsonResponse({"page": page, "has_more": page * 50 < total, "total": total, "sessions": [
         {"id": str(r.id), "label": r.player_label, "server": r.server_id, "start": r.start, "end": r.end,
+         "study": r.study, "location": r.location, "session_name": r.session_name,
+         "labels_url": reverse('study-labels', args=[r.id]) if request.can_import else None,
          "catalog": r.catalog_version, "url": reverse("detail", args=[r.id]), "download": reverse("download", args=[r.id])}
         for r in records.defer("payload", "metrics")
     ]})
@@ -54,7 +71,8 @@ def sessions(request):
 @require_GET
 def detail(request, bundle_id):
     record = get_object_or_404(SessionBundle, pk=bundle_id)
-    return JsonResponse({"bundle": record.payload, "metrics": record.metrics, "digest": record.digest})
+    return JsonResponse({"bundle": record.payload, "metrics": record.metrics, "digest": record.digest,
+                         "labels": {key: getattr(record, key) for key in ('study', 'location', 'session_name', 'labels_updated_by', 'labels_updated_at')}})
 
 
 @require_GET

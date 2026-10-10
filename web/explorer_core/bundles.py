@@ -43,6 +43,9 @@ def validate_bundle(data):
             raise ValueError("Invalid server ID")
         if len(label(data["player_label"])) > 64:
             raise ValueError("Player label is too long")
+        for field in ('study', 'location', 'session_name'):
+            if field in data and data[field] != '':
+                label(data[field])
         if data["session_source"] not in {"manual-window", "recorded"}:
             raise ValueError("Unknown session source")
         if not isinstance(data.get("warnings", []), list) or len(data.get("warnings", [])) > 20:

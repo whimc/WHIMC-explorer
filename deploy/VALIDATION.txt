@@ -42,3 +42,12 @@ PASS: Local migration indexed existing synthetic imports; two-player browser
 overlay and legend toggles verified, no captured browser errors/warnings.
 The comparison deployment requires migration 0002_world_names, collectstatic
 and a Passenger restart. It does not automatically deploy to cPanel.
+
+0.4.0 STUDY/RELEASE UPDATE:
+PASS: 20 portal tests, 15 exporter/version tests, 5 Java tests per target build.
+PASS: Importer-only CSRF-protected label changes preserve source/digest/scores;
+study/location filters and continuous POI threshold tests.
+PASS: Browser selection of synthetic study + location + seven-day window yielded
+the correct two learners and 26 unique samples. Existing local imports migrated.
+The web update requires migration 0003_study_labels. GitHub tag-triggered release
+workflow tests/builds both targets; cPanel/Minecraft installation stays manual.

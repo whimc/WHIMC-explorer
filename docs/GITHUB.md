@@ -21,7 +21,7 @@ python -m unittest discover -s tools -p 'test_*.py'
 python tools/package_release.py
 ```
 
-The release script includes explicit code/docs and synthetic/example JSON only. It excludes operational rosters, real session exports, secrets, DBs and virtualenvs. Current JAR is 0.3.0; tools/docs can change without requiring a new JAR when the Minecraft component is unchanged. Run `package_release.py` after changes to refresh the pilot ZIP and checksums. Immutable public releases should receive a new release version instead of replacing a published artifact.
+The release script includes explicit code/docs and synthetic/example JSON only. It excludes operational rosters, real session exports, secrets, DBs and virtualenvs. Current version is recorded in `VERSION`; tools/docs can change without requiring a new JAR when the Minecraft component is unchanged. Run `package_release.py` after changes to refresh the pilot ZIP and checksums. See [RELEASES.md](RELEASES.md) for automatic tag-based releases, version bumps and distinct Minecraft build names.
 
 For a dependency advisory check, install `pip-audit` in a development environment and run `python -m pip_audit -r web/requirements.txt -r tools/requirements.txt`. Do not treat a clean audit as proof that the application or server configuration is secure.
 

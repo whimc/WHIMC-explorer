@@ -148,6 +148,9 @@ def main():
     for key in ("config", "catalog", "player", "label", "start", "end", "output"):
         parser.add_argument("--" + key, required=True)
     parser.add_argument("--journal")
+    parser.add_argument('--study', default='', help='Study name shared across learners')
+    parser.add_argument('--location', default='', help='Study location, separate from Minecraft world')
+    parser.add_argument('--session-name', default='', help='Human session/activity name, separate from learner label')
     parser.add_argument("--roster", help="Verified account roster; labels participant/operator sessions explicitly")
     parser.add_argument("--npc-complete", action="store_true", help="Operator confirms Citizens capture covered the whole window with no crash or loss")
     args = parser.parse_args()
@@ -171,6 +174,10 @@ def main():
             connection.rollback()
         journal = journal_rows(args.journal, config["server_id"], player, start, end)
         blob = assemble(config, catalog, player, args.label, start, end, positions, regions, journal, args.npc_complete, activities)
+        data = json.loads(blob)
+        data.update(study=args.study, location=args.location, session_name=args.session_name)
+        blob = json.dumps(data, allow_nan=False, separators=(',', ':')).encode()
+        load_bundle(blob)
         if args.roster:
             from roster import identify, tag_bundle
             data = tag_bundle(json.loads(blob), identify(read_json(args.roster), player))

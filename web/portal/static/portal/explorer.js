@@ -39,14 +39,15 @@
   function list() {
     const query = $("session-filter").value.trim().toLowerCase();
     $("session-list").replaceChildren();
-    for (const s of state.sessions.filter(s => `${s.label} ${s.server}`.toLowerCase().includes(query))) {
+    for (const s of state.sessions.filter(s => `${s.label} ${s.server} ${s.study || ''} ${s.location || ''} ${s.session_name || ''}`.toLowerCase().includes(query))) {
       const button = document.createElement("button");
       button.className = "session-item" + (s.id === state.selected ? " selected" : "");
       button.setAttribute("aria-pressed", String(s.id === state.selected));
       const name = document.createElement("strong"); name.textContent = s.label;
       const when = document.createElement("span"); when.textContent = date(s.start);
       const duration = document.createElement("span"); duration.textContent = `${s.server} · ${Math.round((s.end-s.start)/60)} min`;
-      button.append(name, when, duration); button.addEventListener("click", () => select(s));
+      const study = document.createElement('span'); study.textContent = [s.study, s.location, s.session_name].filter(Boolean).join(' · ');
+      button.append(name, study, when, duration); button.addEventListener("click", () => select(s));
       $("session-list").append(button);
     }
   }
@@ -76,6 +77,9 @@
       state.data = result; $("empty").hidden = true; $("review").hidden = false;
       $("server-label").textContent = `SESSION REVIEW / ${session.server}`;
       $("player-label").textContent = session.label;
+      $('study-label').textContent = [result.labels.study, result.labels.location, result.labels.session_name].filter(Boolean).join(' · ');
+      $('edit-study-labels').hidden = !session.labels_url;
+      if (session.labels_url) $('edit-study-labels').href = session.labels_url;
       $("session-time").textContent = `${date(session.start)} — ${date(session.end)} · ${result.bundle.session_source === "recorded" ? "Recorded session" : "Selected evaluation window"}`;
       $("download").href = session.download;
       $("world").replaceChildren();

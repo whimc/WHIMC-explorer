@@ -20,5 +20,6 @@ def store_bundle(blob, importer):
             catalog_version=data["catalog_version"], imported_by=importer,
             source_bytes=len(blob), payload=data, metrics=metrics,
             world_names=sorted(data['worlds']),
+            study=data.get('study', ''), location=data.get('location', ''), session_name=data.get('session_name', ''),
         )
     return record, True

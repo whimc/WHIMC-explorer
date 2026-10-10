@@ -6,7 +6,7 @@ and journal directory. Never install both JARs or use `/reload` to switch versio
 
 | Server target | Explorer JAR suffix | Java bytecode | Verification |
 |---|---|---|---|
-| Paper 26.2 build 132 | ordinary `.jar` | Java 25 | Built/tested; capture verified on the local 26.x pilot |
+| Paper 26.2 build 132 | `-mc26.x.jar` | Java 25 | Built/tested; capture verified on the local 26.x pilot |
 | Paper 1.21.11 | `-mc1.21.11.jar` | Java 21 | Compiled against 1.21.11 API; journal tests pass; live 1.21.11 integration still required |
 
 The ordinary 26.2 JAR declares API 26.2 and will not load on 1.21.11. The separate
@@ -21,7 +21,7 @@ mvn -f plugin/pom.xml package
 mvn -f plugin/pom.xml '-Pmc-1.21.11' package
 ```
 
-Outputs live in `plugin/target/` and `plugin/target-mc1.21.11/`, respectively.
+Outputs live in `plugin/target-mc26.x/` and `plugin/target-mc1.21.11/`, respectively.
 The profile pins Paper `1.21.11-R0.1-20260511.115010-91` and Citizens API
 `2.0.41-20260326.063323-24`. The default pins Paper `26.2.build.132-stable` and
 Citizens API `2.0.44-20261008.185736-5`. These are compile-time APIs, not bundled
