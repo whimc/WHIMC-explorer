@@ -16,7 +16,7 @@ class BatchTests(TestCase):
             calls=[];prompts=[]
             def runner(args,env):
                 calls.append((args,env));return SimpleNamespace(returncode=1 if len(calls)==1 else 0)
-            result=run_jobs(self.jobs(folder),runner,lambda prompt:prompts.append(prompt) or 'synthetic-password')
+            result=run_jobs(self.jobs(folder),runner,lambda:prompts.append(True) or 'synthetic-password')
             self.assertEqual(result,1);self.assertEqual(len(calls),2);self.assertEqual(len(prompts),1)
             self.assertEqual(calls[0][1]['EXPLORER_DB_PASSWORD'],'synthetic-password')
             self.assertNotIn('synthetic-password',calls[0][0])

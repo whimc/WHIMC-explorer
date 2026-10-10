@@ -38,7 +38,8 @@ def run_jobs(jobs, runner=subprocess.run, password_prompt=getpass.getpass):
     validate_jobs(jobs)
     env=os.environ.copy()
     if not env.get('EXPLORER_DB_PASSWORD'):
-        env['EXPLORER_DB_PASSWORD']=password_prompt('Read-only tracker database password (for this batch): ')
+        print('Enter the read-only tracker database credential once for this batch.',flush=True)
+        env['EXPLORER_DB_PASSWORD']=password_prompt()
     failed=0
     for i,job in enumerate(jobs,1):
         print(f'Export {i} of {len(jobs)}',flush=True)
