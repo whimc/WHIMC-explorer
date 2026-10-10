@@ -1,0 +1,14 @@
+{
+  "server_id": "whimc-local",
+  "region_capture_complete": false,
+  "mysql": {
+    "host": "127.0.0.1",
+    "port": 3306,
+    "database": "REPLACE_TRACKER_DATABASE",
+    "user": "REPLACE_READ_ONLY_USER"
+  },
+  "activity_sources": {
+    "observation": false,
+    "science_tool": false
+  }
+}

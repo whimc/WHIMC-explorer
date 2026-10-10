@@ -1,0 +1,47 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>edu.whimc</groupId>
+  <artifactId>WHIMC-Explorer</artifactId>
+  <version>0.3.0</version>
+  <name>WHIMC Explorer</name>
+  <description>Local session and interaction capture for WHIMC Explorer</description>
+  <properties>
+    <maven.compiler.release>25</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <paper.version>26.2.build.132-stable</paper.version>
+    <citizens.version>2.0.44-20261008.185736-5</citizens.version>
+    <minecraft.api>26.2</minecraft.api>
+    <artifact.suffix></artifact.suffix>
+  </properties>
+  <repositories>
+    <repository><id>papermc</id><url>https://repo.papermc.io/repository/maven-public/</url></repository>
+    <repository><id>citizens-repo</id><url>https://maven.citizensnpcs.co/repo</url></repository>
+  </repositories>
+  <dependencies>
+    <dependency><groupId>io.papermc.paper</groupId><artifactId>paper-api</artifactId><version>${paper.version}</version><scope>provided</scope></dependency>
+    <dependency><groupId>net.citizensnpcs</groupId><artifactId>citizensapi</artifactId><version>${citizens.version}</version><scope>provided</scope><exclusions><exclusion><groupId>*</groupId><artifactId>*</artifactId></exclusion></exclusions></dependency>
+    <dependency><groupId>org.junit.jupiter</groupId><artifactId>junit-jupiter</artifactId><version>5.10.0</version><scope>test</scope></dependency>
+  </dependencies>
+  <build>
+    <directory>target${artifact.suffix}</directory>
+    <finalName>${project.artifactId}-${project.version}${artifact.suffix}</finalName>
+    <resources><resource><directory>src/main/resources</directory><filtering>true</filtering></resource></resources>
+    <plugins>
+      <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-compiler-plugin</artifactId><version>3.13.0</version></plugin>
+      <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-surefire-plugin</artifactId><version>3.2.5</version></plugin>
+      <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-jar-plugin</artifactId><version>3.4.1</version></plugin>
+    </plugins>
+  </build>
+  <profiles>
+    <profile>
+      <id>mc-1.21.11</id>
+      <properties>
+        <maven.compiler.release>21</maven.compiler.release>
+        <paper.version>1.21.11-R0.1-20260511.115010-91</paper.version>
+        <citizens.version>2.0.41-20260326.063323-24</citizens.version>
+        <minecraft.api>1.21.11</minecraft.api>
+        <artifact.suffix>-mc1.21.11</artifact.suffix>
+      </properties>
+    </profile>
+  </profiles>
+</project>

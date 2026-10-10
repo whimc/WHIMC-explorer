@@ -1,0 +1,216 @@
+{
+  "player_uuid": "00000000-0000-4000-8000-000000000001",
+  "start": 1700000000,
+  "end": 1700000060,
+  "catalog_version": "synthetic-demo-v1",
+  "worlds": {
+    "demo-world": {
+      "min_x": -50,
+      "max_x": 50,
+      "min_z": -50,
+      "max_z": 50
+    }
+  },
+  "availability": {
+    "npc_interaction": true,
+    "journey_completed": true,
+    "region_enter": false
+  },
+  "targets": [
+    {
+      "world": "demo-world",
+      "id": "geologist",
+      "kind": "npc",
+      "x": 0,
+      "y": 64,
+      "z": 0,
+      "radius": 4,
+      "minimum_dwell_seconds": 4,
+      "name": "Dr. Geologist"
+    },
+    {
+      "world": "demo-world",
+      "id": "crater-overlook",
+      "kind": "waypoint",
+      "x": 30,
+      "y": 64,
+      "z": 20,
+      "radius": 4,
+      "minimum_dwell_seconds": 4,
+      "name": "Crater overlook"
+    }
+  ],
+  "positions": [
+    {
+      "id": "tracker:0",
+      "uuid": "00000000-0000-4000-8000-000000000001",
+      "time": 1700000000,
+      "world": "demo-world",
+      "x": -40,
+      "y": 64,
+      "z": -35
+    },
+    {
+      "id": "tracker:1",
+      "uuid": "00000000-0000-4000-8000-000000000001",
+      "time": 1700000002,
+      "world": "demo-world",
+      "x": -30,
+      "y": 64,
+      "z": -25
+    },
+    {
+      "id": "tracker:2",
+      "uuid": "00000000-0000-4000-8000-000000000001",
+      "time": 1700000004,
+      "world": "demo-world",
+      "x": -20,
+      "y": 64,
+      "z": -15
+    },
+    {
+      "id": "tracker:3",
+      "uuid": "00000000-0000-4000-8000-000000000001",
+      "time": 1700000006,
+      "world": "demo-world",
+      "x": -10,
+      "y": 64,
+      "z": -5
+    },
+    {
+      "id": "tracker:4",
+      "uuid": "00000000-0000-4000-8000-000000000001",
+      "time": 1700000008,
+      "world": "demo-world",
+      "x": 0,
+      "y": 64,
+      "z": 0
+    },
+    {
+      "id": "tracker:5",
+      "uuid": "00000000-0000-4000-8000-000000000001",
+      "time": 1700000010,
+      "world": "demo-world",
+      "x": 0,
+      "y": 64,
+      "z": 0
+    },
+    {
+      "id": "tracker:6",
+      "uuid": "00000000-0000-4000-8000-000000000001",
+      "time": 1700000012,
+      "world": "demo-world",
+      "x": 0,
+      "y": 64,
+      "z": 0
+    },
+    {
+      "id": "tracker:7",
+      "uuid": "00000000-0000-4000-8000-000000000001",
+      "time": 1700000014,
+      "world": "demo-world",
+      "x": 0,
+      "y": 64,
+      "z": 0
+    },
+    {
+      "id": "tracker:8",
+      "uuid": "00000000-0000-4000-8000-000000000001",
+      "time": 1700000016,
+      "world": "demo-world",
+      "x": 10,
+      "y": 64,
+      "z": 10
+    },
+    {
+      "id": "tracker:9",
+      "uuid": "00000000-0000-4000-8000-000000000001",
+      "time": 1700000018,
+      "world": "demo-world",
+      "x": 20,
+      "y": 64,
+      "z": 20
+    },
+    {
+      "id": "tracker:10",
+      "uuid": "00000000-0000-4000-8000-000000000001",
+      "time": 1700000020,
+      "world": "demo-world",
+      "x": 30,
+      "y": 64,
+      "z": 20
+    },
+    {
+      "id": "tracker:11",
+      "uuid": "00000000-0000-4000-8000-000000000001",
+      "time": 1700000022,
+      "world": "demo-world",
+      "x": 30,
+      "y": 64,
+      "z": 20
+    },
+    {
+      "id": "tracker:12",
+      "uuid": "00000000-0000-4000-8000-000000000001",
+      "time": 1700000024,
+      "world": "demo-world",
+      "x": 30,
+      "y": 64,
+      "z": 20
+    }
+  ],
+  "events": [
+    {
+      "id": "npc:1",
+      "uuid": "00000000-0000-4000-8000-000000000001",
+      "time": 1700000010,
+      "world": "demo-world",
+      "kind": "npc_interaction",
+      "target_id": "geologist"
+    },
+    {
+      "id": "journey:1",
+      "uuid": "00000000-0000-4000-8000-000000000001",
+      "time": 1700000024,
+      "world": "demo-world",
+      "kind": "journey_completed",
+      "target_id": "crater-overlook"
+    }
+  ],
+  "format": "whimc-explorer.bundle.v1",
+  "server_id": "synthetic-lab",
+  "player_label": "Loaner 01 \u00b7 Synthetic demo",
+  "session_source": "manual-window",
+  "warnings": [
+    "Synthetic example only; no participant records."
+  ],
+  "activity_sources": {
+    "observation": true,
+    "science_tool": true
+  },
+  "activities": [
+    {
+      "id": "demo:observation:1",
+      "kind": "observation",
+      "uuid": "00000000-0000-4000-8000-000000000001",
+      "time": 1700000025,
+      "world": "demo-world",
+      "x": 0,
+      "y": 64,
+      "z": 0,
+      "text": "The crater wall has layers. Could these show earlier impacts?\nSynthetic observation for testing."
+    },
+    {
+      "id": "demo:science:1",
+      "kind": "science_tool",
+      "uuid": "00000000-0000-4000-8000-000000000001",
+      "time": 1700000035,
+      "world": "demo-world",
+      "x": 15,
+      "y": 64,
+      "z": 15,
+      "tool": "thermometer",
+      "text": "Synthetic measurement: -20 \u00b0C"
+    }
+  ]
+}

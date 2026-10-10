@@ -1,0 +1,33 @@
+{
+  "catalog_version": "synthetic-demo-v1",
+  "worlds": {
+    "demo-world": {
+      "min_x": -50,
+      "max_x": 50,
+      "min_z": -50,
+      "max_z": 50
+    }
+  },
+  "targets": [
+    {
+      "world": "demo-world",
+      "id": "geologist",
+      "kind": "npc",
+      "x": 0,
+      "y": 64,
+      "z": 0,
+      "radius": 4,
+      "minimum_dwell_seconds": 4
+    },
+    {
+      "world": "demo-world",
+      "id": "crater-overlook",
+      "kind": "waypoint",
+      "x": 30,
+      "y": 64,
+      "z": 20,
+      "radius": 4,
+      "minimum_dwell_seconds": 4
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+name: WHIMC-Explorer
+version: ${project.version}
+main: edu.whimc.explorer.ExplorerPlugin
+api-version: '${minecraft.api}'
+description: Local session and NPC interaction capture; Position Tracker remains the movement source.
+softdepend: [WHIMC-PositionTracker, Citizens, Journey]
+commands:
+  whimcexplorer:
+    description: Show Explorer capture status
+    usage: /whimcexplorer status
+    permission: whimcexplorer.admin
+permissions:
+  whimcexplorer.admin:
+    default: op

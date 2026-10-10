@@ -1,0 +1,10 @@
+# Local development alpha. No web requests or database credentials are used.
+# Configure an explicit study roster, enable capture, then restart the test server.
+capture:
+  enabled: false
+  server-id: local-test
+  player-uuids: []
+  queue-capacity: 4096
+  max-journal-files: 100000
+  minimum-free-megabytes: 64
+  shutdown-wait-seconds: 5

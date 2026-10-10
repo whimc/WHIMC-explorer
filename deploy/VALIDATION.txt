@@ -1,0 +1,44 @@
+WHIMC Explorer 0.2.0 pilot — local validation 2026-10-09
+
+PASS: Maven package, Java 25 / exact Paper 26.2 build 132 API; 5 journal tests.
+PASS: Python 3.12.14 / Django 5.2.18; 16 portal/security/scoring/comparison tests.
+PASS: 13 exporter/Journey/map-template/roster/activity tests (mock MySQL and temporary SQLite).
+PASS: Real Mars template and operator tagging checked by the portal bundle validator.
+PASS: JavaScript syntax check.
+PASS: Synthetic browser preview, path rendering, timeline, grid toggle, search;
+      no browser console errors observed.
+PASS: pip-audit of web and exporter pinned requirements: no known vulnerabilities.
+      This is a point-in-time package advisory check, not a security guarantee.
+PASS: Django deployment checks except intentional HSTS subdomain/preload warnings;
+      shared website settings must not be changed without checking its other sites.
+
+PILOT VERIFIED: Plugin startup on Paper 26.2; journaled joins/quits, teleports,
+Citizens clicks. Local tracker DB read yielded 76 movement samples and 6 region
+entries for the repaired test. Owner confirmed NetID portal and imported test
+session display. These checks do not cover all users, failure modes or research
+validity. Remaining checks include denial/access cases, quotas, map calibration,
+backup restoration and production deployment.
+
+Two verified-empty local test tracker tables had their missing primary key and
+AUTO_INCREMENT restored after saving their original definitions. No production
+DB modification, EC2 shutdown or Path-Generator modification was performed.
+The owner deployed the cPanel app. Original source data remains the system of
+record. This is a pilot release for staging verification.
+
+ACTIVITY UPDATE: Clickable named NPC/waypoint dots, observation and measurement
+overlays, overlapping-dot chooser, keyboard detail buttons, source filters and
+timeline filtering verified in the synthetic browser preview. Read-only queries
+against the completed local pilot window returned zero observations and zero
+science measurements; real activity display still needs a fresh recorded action.
+No gameplay plugin or database schema change was needed for this update.
+
+0.3.0 COMPARISON/COMPATIBILITY UPDATE:
+PASS: Default 26.2 and separate Paper 1.21.11 Maven profile builds; 5 journal
+tests per build. 1.21.11 profile emits Java 21 bytecode and API version 1.21.11.
+Live server integration of the 1.21.11 build is NOT yet verified.
+PASS: Date/time clipping, player grouping, duplicate/conflicting source IDs,
+map/server compatibility, teleport/world gaps, query bounds and authentication.
+PASS: Local migration indexed existing synthetic imports; two-player browser
+overlay and legend toggles verified, no captured browser errors/warnings.
+The comparison deployment requires migration 0002_world_names, collectstatic
+and a Passenger restart. It does not automatically deploy to cPanel.

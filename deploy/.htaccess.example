@@ -1,0 +1,15 @@
+# TEMPLATE ONLY: merge into the NEW Explorer app directory's cPanel-generated
+# .htaccess, preserving its Passenger directives. Never replace the site's root
+# WordPress .htaccess with this file.
+
+# Until named users are configured, deny all access.
+Require all denied
+
+# When ready, REPLACE the single Require-all-denied line above with:
+# AuthType Shibboleth
+# ShibRequestSetting requireSession 1
+# Require shib-user evaluator1@illinois.edu evaluator2@illinois.edu
+
+# Use cPanel Domains -> Force HTTPS Redirect. Protect API/exports too.
+# An authenticated machine-ingestion endpoint needs its own tightly scoped
+# authorization design; do not broadly exempt /api from these restrictions.
