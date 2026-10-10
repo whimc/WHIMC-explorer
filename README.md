@@ -100,6 +100,11 @@ Queue acceptance is not durable: crashes can lose pending events. Disk failures 
 
 ## Windows export
 
+The web app has an **Import session → Build an export script** wizard with copy and
+PowerShell download options. See [the wizard guide](docs/EXPORT-WIZARD.md). It creates
+a script to run on your Windows server; upload the resulting JSON afterward.
+
+
 Copy `tools/export-config.example.json` to private local configuration. Set the tracker DB host/name and a SELECT-only user. The password is prompted or read from `EXPLORER_DB_PASSWORD`; do not store it in JSON. Remote MySQL requires `mysql.ssl_ca` and verified TLS. Loopback may use a locally secured connection/tunnel.
 
 Replace synthetic worlds/targets in `tools/catalog.example.json`. NPC IDs are Citizens UUIDs, not numeric IDs; waypoint IDs are Journey `name_id`; region IDs match the tracker `region`. Change `catalog_version` whenever bounds, POIs or thresholds change. An optional `image_png_base64` within world bounds supplies a PNG aligned to those full bounds, X-right/Z-down (up to 2 MB and 8192 pixels per side).
