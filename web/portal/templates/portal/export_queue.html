@@ -6,7 +6,7 @@
 <p>Last contact: {{ server.last_seen|date:"Y-m-d H:i:s T" }}. Requests wait if the server is offline.</p>
 <form method="post">{% csrf_token %}<input type="hidden" name="server" value="{{ server.id }}">
 <fieldset><legend>Learners (choose up to 50)</legend><div class="learner-options">{% for learner in server.learners %}<label><input type="checkbox" name="players" value="{{ learner.uuid }}"> {{ learner.name }}{% if learner.role == 'operator' %} — operator{% endif %}</label>{% endfor %}</div></fieldset>
-<label>World<select name="world"><option value="">All catalog worlds</option>{% for world in server.worlds %}<option>{{ world }}</option>{% endfor %}</select></label>
+<label>World<select name="world" {% if server.requires_world %}required{% endif %}><option value="">{% if server.requires_world %}Choose a world{% else %}All catalog worlds{% endif %}</option>{% for world in server.worlds %}<option>{{ world }}</option>{% endfor %}</select></label>
 <label>Study timezone<select name="timezone"><option>America/Chicago</option><option>America/New_York</option><option>America/Denver</option><option>America/Los_Angeles</option><option>America/Phoenix</option><option>UTC</option></select></label>
 <p>Use the study location's clock. For morning enter 09:00–12:00; for afternoon submit a separate request for 13:00–16:00. Times that repeat or do not exist at a daylight-saving change are rejected.</p>
 <label>Start (included)<input type="datetime-local" name="start" required></label><label>End (excluded)<input type="datetime-local" name="end" required></label>

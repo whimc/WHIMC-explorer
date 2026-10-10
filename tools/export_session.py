@@ -13,6 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "web"))
 from explorer_core.bundles import load_bundle, unique_keys, reject_constant
 from explorer_core.time_windows import parse_time, zone
 from poi_settings import configured_catalog
+from catalog_source import select_catalog
 
 
 def read_json(path, limit=8 * 1024 * 1024):
@@ -112,6 +113,8 @@ def assemble(config, catalog, player, label, start, end, positions, regions, jou
     for r in positions:
         p = {key: r[key] for key in ("uuid", "time", "world", "x", "y", "z")}
         p["id"] = f"{server}:position:{r['rowid']}"
+        if r.get('break_before'):
+            p['break_before'] = True
         # Tracker timestamps have second resolution. Conservatively break segments
         # intersecting the entire second containing a teleport/session boundary.
         if samples and bisect.bisect_left(teleports, (p["time"] + 1) * 1000) > bisect.bisect_left(teleports, samples[-1]["time"] * 1000):
@@ -148,6 +151,7 @@ def main():
     for key in ("config", "catalog", "player", "label", "start", "end", "output"):
         parser.add_argument("--" + key, required=True)
     parser.add_argument("--journal")
+    parser.add_argument('--world', help='Exact world; required for a catalog index')
     parser.add_argument('--study', default='', help='Study name shared across learners')
     parser.add_argument('--location', default='', help='Study location, separate from Minecraft world')
     parser.add_argument('--session-name', default='', help='Human session/activity name, separate from learner label')
@@ -157,6 +161,7 @@ def main():
     args = parser.parse_args()
     try:
         config, catalog = read_json(args.config), read_json(args.catalog)
+        catalog = select_catalog(args.catalog, catalog, args.world, read_json)
         study_timezone = args.timezone or config.get('study_timezone')
         if study_timezone:
             zone(study_timezone)
@@ -177,8 +182,23 @@ def main():
             activities = activity_rows(connection, config['server_id'], player, start, end, config.get('activity_sources', {}))
             connection.rollback()
         journal = journal_rows(args.journal, config["server_id"], player, start, end)
+        if args.world:
+            # Preserve breaks when a player leaves and returns to the selected world.
+            selected = []
+            previous = None
+            for row in positions:
+                if row['world'] == args.world:
+                    if previous is not None and previous['world'] != args.world:
+                        row = dict(row, break_before=True)
+                    selected.append(row)
+                previous = row
+            positions = selected
+            regions = [r for r in regions if r['world'] == args.world]
+            activities = [r for r in activities if r['world'] == args.world]
+            journal = [r for r in journal if r['world_name'] == args.world]
         blob = assemble(config, catalog, player, args.label, start, end, positions, regions, journal, args.npc_complete, activities)
         data = json.loads(blob)
+        data['warnings'].extend(catalog.get('warnings', []))
         data.update(study=args.study, location=args.location, session_name=args.session_name)
         if study_timezone:
             data['study_timezone'] = study_timezone

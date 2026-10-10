@@ -82,13 +82,17 @@ def poll(request):
     try:
         if len(request.body) > 128 * 1024:
             raise ValueError()
-        learners, worlds = inventory(json.loads(request.body))
+        incoming = json.loads(request.body)
+        learners, worlds = inventory(incoming)
+        requires_world = incoming.get('requires_world', False)
+        if type(requires_world) is not bool:
+            raise ValueError()
     except (ValueError, TypeError, KeyError, AttributeError):
         return JsonResponse({'error': 'Invalid inventory'}, status=400)
     now = timezone.now()
     with transaction.atomic():
         server, _ = ExportServer.objects.update_or_create(id=request.worker_server,
-            defaults=dict(last_seen=now, learners=learners, worlds=worlds))
+            defaults=dict(last_seen=now, learners=learners, worlds=worlds, requires_world=requires_world))
         ExportJob.objects.filter(server=server, state='running', lease_until__lte=now, attempts__gte=3).update(
             state='failed', error='Server did not finish after three attempts.')
         available = Q(state='pending') | Q(state='running', lease_until__lte=now, attempts__lt=3)
@@ -165,6 +169,8 @@ def page(request):
             if not 0 < end-start <= 7*86400 or end > int(timezone.now().timestamp()) - 60:
                 raise ValueError('Choose a completed window of at most seven days, ending at least one minute ago.')
             world = request.POST.get('world', '')
+            if server.requires_world and not world:
+                raise ValueError('Choose one world for this server catalog.')
             if world and world not in server.worlds:
                 raise ValueError('Choose a world advertised by this server.')
             labels = {k: short_text(request.POST.get(k, '')) for k in ('study', 'location', 'session_name')}

@@ -21,6 +21,7 @@ from export_session import read_json
 from explorer_core.bundles import load_bundle
 from explorer_core.time_windows import zone
 from roster import identify
+from catalog_source import INDEX_FORMAT
 
 
 class NoRedirect(HTTPRedirectHandler):
@@ -59,7 +60,9 @@ def configuration(path):
         if len(a['name']) > 48:
             raise ValueError('Use learner names of at most 48 characters.')
         cfg['learners'].append(dict(uuid=str(UUID(a['uuid'])), name=a['name'], role=a['role']))
-    cfg['worlds'] = list(read_json(cfg['catalog'])['worlds'])
+    catalog = read_json(cfg['catalog'])
+    cfg['worlds'] = list(catalog['worlds'])
+    cfg['requires_world'] = catalog.get('format') == INDEX_FORMAT
     Path(cfg['spool']).mkdir(parents=True, exist_ok=True)
     return cfg
 
@@ -86,6 +89,8 @@ def validated_job(cfg, job):
     known = {a['uuid']: a for a in cfg['learners']}
     if job['player'] not in known or job['world'] not in ['', *cfg['worlds']]:
         raise ValueError('Job is outside the local roster or catalog.')
+    if cfg.get('requires_world') and not job['world']:
+        raise ValueError('Choose one world for this catalog index.')
     if any(type(job[k]) is not int for k in ('start','end')) or not 0 < job['end']-job['start'] <= 7*86400 or job['end'] > int(time.time())-60:
         raise ValueError('Invalid completed time window.')
     zone(job['timezone'])
@@ -105,6 +110,8 @@ def export_args(cfg, job, output):
                   timezone=job['timezone'], study=job['study'], location=job['location'],
                   output=str(output))
     values['session-name'] = job['session_name']
+    if job['world']:
+        values['world'] = job['world']
     return [sys.executable, str(Path(__file__).with_name('export_session.py')),
             *[f'--{k}={v}' for k,v in values.items()]]
 
@@ -128,7 +135,8 @@ def filter_world(blob, world):
 
 
 def run_once(cfg, transport=exchange, runner=subprocess.run):
-    reply = transport(cfg, 'poll', json.dumps({k:cfg[k] for k in ('learners','worlds')}).encode())
+    reply = transport(cfg, 'poll', json.dumps({**{k:cfg[k] for k in ('learners','worlds')},
+        'requires_world':cfg.get('requires_world',False)}).encode())
     if reply.get('job') is None:
         return
     raw = reply['job']

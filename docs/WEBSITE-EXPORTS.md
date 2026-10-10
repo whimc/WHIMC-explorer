@@ -154,6 +154,14 @@ disabled when exporting already-recorded data. The journal directory must exist.
 
 ## 5. First run and everyday use
 
+For many worlds, use the [catalog index format](MAPS.md#large-collections-of-existing-maps)
+in 0.8.1 or later. Update the Windows `tools/` and `web/` source files and the cPanel
+web files, run cPanel migrations (including 0005), and restart Passenger. The existing
+0.8.0 plugin can launch the updated worker without a JAR change. Copy the private
+roster to `private-data/roster/accounts.json` and the index plus `catalogs/` into
+private-data on Windows; these operational files are not part of the public source
+release. Indexed catalogs require selecting one world on the request page.
+
 Run `whimcexplorer status` in the console. Within a minute the website request page
 should show the server, last-contact time (UTC), friendly learner names and worlds.
 Only NetIDs listed in `EXPLORER_IMPORTERS` can request exports.

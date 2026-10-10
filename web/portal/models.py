@@ -7,6 +7,7 @@ class ExportServer(models.Model):
     last_seen = models.DateTimeField()
     learners = models.JSONField(default=list)
     worlds = models.JSONField(default=list)
+    requires_world = models.BooleanField(default=False)
 
 
 class ExportJob(models.Model):
