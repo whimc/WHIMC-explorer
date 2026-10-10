@@ -14,7 +14,7 @@
     if (!Number.isFinite(date.getTime()) || date.toISOString().slice(0,19) !== normalized) throw new Error('Choose valid calendar dates and times.');
     return normalized;
   }
-  function buildScript(values) {
+  function buildArguments(values) {
     const player = text(values.player, 'the Minecraft player UUID');
     if (!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(player)) throw new Error('Enter a Minecraft UUID with hyphens; an account name alone is not enough.');
     if (!zones.includes(values.timezone)) throw new Error('Choose the study timezone.');
@@ -30,6 +30,9 @@
       const value = text(values[flag], flag, false);
       if (value) args.push(`--${flag}=${value}`);
     }
+    return args;
+  }
+  function renderScript(args, batch=false) {
     // ASCII JSON keeps Windows PowerShell 5.1's default pipeline encoding lossless.
     // JSON escapes line breaks, so input cannot terminate the literal here-string.
     const json = JSON.stringify(args, null, 2).replace(/[\u007f-\uffff]/g, c=>'\\u'+c.charCodeAt(0).toString(16).padStart(4,'0'));
@@ -37,14 +40,53 @@
       '# Requires the prepared .venv, local configuration and reviewed catalog.\r\n' +
       '# Database credentials are prompted locally. Review paths and dates before running.\r\n' +
       "$exportArgumentsJson = @'\r\n" + json.replace(/\n/g,'\r\n') + "\r\n'@\r\n" +
-      "$exportArgumentsJson | & '.\\.venv\\Scripts\\python.exe' '-c' 'import json, subprocess, sys; sys.exit(subprocess.call([sys.executable, sys.argv[1], *json.load(sys.stdin)]))' 'tools/export_session.py'\r\n" +
-      "if ($LASTEXITCODE -ne 0) { throw 'Export failed. Read the exporter message above; no upload is ready.' }\r\n";
+      (batch ? "$exportArgumentsJson | & '.\\.venv\\Scripts\\python.exe' 'tools/export_batch.py'\r\n" : "$exportArgumentsJson | & '.\\.venv\\Scripts\\python.exe' '-c' 'import json, subprocess, sys; sys.exit(subprocess.call([sys.executable, sys.argv[1], *json.load(sys.stdin)]))' 'tools/export_session.py'\r\n") +
+      "if ($LASTEXITCODE -ne 0) { throw 'An export failed. Read the messages above; only upload successfully generated JSON files.' }\r\n";
   }
-  if (typeof module !== 'undefined' && module.exports) { module.exports = {buildScript}; return; }
+  function buildScript(values) { return renderScript(buildArguments(values)); }
+  function buildBatchScript(values, learners) {
+    if (!learners.length || learners.length>50) throw new Error('Choose between 1 and 50 learners.');
+    if (new Set(learners.map(a=>a.uuid.toLowerCase())).size !== learners.length) throw new Error('Each learner must be selected only once.');
+    const base=text(values.output,'an output JSON filename');
+    if (!/\.json$/i.test(base)) throw new Error('The base filename must end in .json.');
+    const jobs=learners.map(a=>{
+      const slug=a.name.replace(/[^A-Za-z0-9_-]/g,'-').slice(0,40) || 'learner';
+      return buildArguments({...values,player:a.uuid,label:a.name,output:`${base.slice(0,-5)}-${slug}-${a.uuid.toLowerCase()}.json`});
+    });
+    return renderScript(jobs,true);
+  }
+  if (typeof module !== 'undefined' && module.exports) { module.exports = {buildScript,buildBatchScript}; return; }
   const form = document.getElementById('export-wizard');
   if (!form) return;
   const $ = id=>document.getElementById(id);
   let script = '';
+  const learners=JSON.parse($('learner-roster').textContent), selected=new Set();
+  function choices() {
+    const query=$('learner-search').value.toLowerCase(); $('learner-choices').replaceChildren();
+    for (const role of ['participant','operator','unknown']) {
+      const group=learners.filter(a=>(['participant','operator'].includes(a.role)?a.role:'unknown')===role && a.name.toLowerCase().includes(query));
+      if (!group.length) continue;
+      const heading=document.createElement('h3');heading.textContent=role==='participant'?'Participants':role==='operator'?'Operators / test accounts':'Previously imported learners (role not recorded)';$('learner-choices').append(heading);
+      for (const a of group) {
+        const label=document.createElement('label'), box=document.createElement('input'), name=document.createElement('span');
+        box.type='checkbox';box.checked=selected.has(a.uuid);name.textContent=a.name;
+        box.addEventListener('change',()=>{box.checked?selected.add(a.uuid):selected.delete(a.uuid);invalidate();count();});
+        label.append(box,name);$('learner-choices').append(label);
+      }
+    }
+    count();
+  }
+  function count(){ $('learner-count').textContent=`${selected.size} selected · ${learners.length} available`; }
+  $('learner-search').addEventListener('input',choices);
+  $('learner-all').addEventListener('click',()=>{for(const a of learners)if(a.role==='participant')selected.add(a.uuid);invalidate();choices();});
+  $('learner-clear').addEventListener('click',()=>{selected.clear();invalidate();choices();});
+  $('learner-manual').addEventListener('change',()=>{
+    const manual=$('learner-manual').checked;
+    $('manual-learner').hidden=!manual;$('roster-picker').hidden=manual;
+    for(const id of ['wizard-player','wizard-label'])$(id).required=manual;
+    invalidate();
+  });
+  choices();
   function invalidate() { script=''; $('wizard-result').hidden=true; $('wizard-message').textContent=''; }
   form.addEventListener('input', invalidate);
   $('wizard-preset').addEventListener('change',()=>{
@@ -61,7 +103,8 @@
   form.addEventListener('submit', event=>{
     event.preventDefault(); invalidate();
     try {
-      script = buildScript(Object.fromEntries(new FormData(form)));
+      const values=Object.fromEntries(new FormData(form));
+      script = $('learner-manual').checked ? buildScript(values) : buildBatchScript(values,learners.filter(a=>selected.has(a.uuid)));
       $('wizard-script').value=script; $('wizard-result').hidden=false;
       $('wizard-message').textContent='Script ready. Review it, then run it locally and upload the generated JSON.';
       $('wizard-script').focus();

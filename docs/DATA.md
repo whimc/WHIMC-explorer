@@ -8,6 +8,7 @@
 | Incomplete event files | Same journal, `.part` suffix | Writer recovery/diagnostics only; not imported |
 | Player capture enrollment | Minecraft `plugins/WHIMC-Explorer/config.yml` | Server administrator and Explorer plugin |
 | Account roles and verified UUID roster | Private Windows `private-data/roster/accounts.json` | Administrator/exporter; not website authentication |
+| Named learner picker roster | Private portal `EXPLORER_DATA_DIR/roster/accounts.json` | Authenticated importers only; optional private copy of Windows roster |
 | Map templates / reviewed catalogs | Private Windows `private-data/map-templates/` and selected catalog files | Local helpers/exporter |
 | Portable session bundles | Private Windows export folder; uploaded through portal | Operator creates; authorized importer uploads; allowlisted evaluators can download |
 | Portal DB and recomputed scores | `EXPLORER_DATA_DIR/explorer.sqlite3`, outside public_html | Django/Passenger under the cPanel account |

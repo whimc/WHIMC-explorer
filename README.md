@@ -100,8 +100,9 @@ Queue acceptance is not durable: crashes can lose pending events. Disk failures 
 
 ## Windows export
 
-The web app has an **Import session → Build an export script** wizard with copy and
-PowerShell download options. See [the wizard guide](docs/EXPORT-WIZARD.md). It creates
+The web app has an **Import session → Build an export script** wizard with a named learner picker, copy and
+PowerShell download options. Select a group once to export each learner, then upload
+the resulting JSON files together. See [the wizard guide](docs/EXPORT-WIZARD.md). It creates
 a script to run on your Windows server; upload the resulting JSON afterward.
 
 

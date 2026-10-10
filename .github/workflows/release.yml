@@ -41,6 +41,7 @@ jobs:
           node --check web/portal/static/portal/explorer.js
           node --check web/portal/static/portal/compare.js
           node --check web/portal/static/portal/export-wizard.js
+          node --check web/portal/static/portal/import-batch.js
           node tools/test_export_wizard.js
       - name: Build both Minecraft targets
         run: |
