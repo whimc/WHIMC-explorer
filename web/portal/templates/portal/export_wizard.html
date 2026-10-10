@@ -1,0 +1,49 @@
+<section class="export-help" aria-labelledby="wizard-heading">
+<h2 id="wizard-heading">Build an export script</h2>
+<p>Fill in the learner, study times and file paths on your Windows server. This creates a script to run locally; it does not connect to your database. Values stay in this page and are not saved when you leave.</p>
+<noscript><p>Enable JavaScript to use the wizard, or follow the manual instructions below.</p></noscript>
+{{ learners|json_script:'learner-roster' }}
+<form id="export-wizard" hidden>
+<fieldset><legend>1. Learner and study</legend>
+<div class="learner-picker"><label><input id="learner-manual" type="checkbox"> Enter a UUID manually instead</label></div>
+<div id="roster-picker" class="learner-picker">
+<p class="small muted">{{ roster_message }}</p>
+<details open><summary>Choose learners <span id="learner-count"></span></summary>
+<label for="learner-search">Find learner by name</label><input id="learner-search" type="search" placeholder="MCSfox, MCSbear…">
+<div class="wizard-actions"><button id="learner-all" type="button" class="secondary">Select all participants</button><button id="learner-clear" type="button" class="secondary">Clear selection</button></div>
+<div id="learner-choices"></div></details></div>
+<div id="manual-learner" class="learner-picker" hidden>
+<label for="wizard-player">Minecraft player UUID</label><input id="wizard-player" name="player" type="text" placeholder="00000000-0000-4000-8000-000000000001" maxlength="36">
+<label for="wizard-label">Learner label</label><input id="wizard-label" name="label" type="text" placeholder="MCSfox or Learner 01" maxlength="64"></div>
+<label for="wizard-study">Study</label><input id="wizard-study" name="study" type="text" placeholder="Fall habitat study" maxlength="128">
+<label for="wizard-location">Study location</label><input id="wizard-location" name="location" type="text" placeholder="Lincoln School" maxlength="128">
+<label for="wizard-session">Session name</label><input id="wizard-session" name="session-name" type="text" placeholder="Week 1 morning" maxlength="128">
+</fieldset>
+<fieldset><legend>2. Study time window</legend>
+<label for="wizard-timezone">Study timezone</label><select id="wizard-timezone" name="timezone"><option value="America/New_York">Eastern — New York</option><option value="America/Chicago">Central — Chicago</option><option value="America/Denver">Mountain — Denver</option><option value="America/Phoenix">Arizona — Phoenix</option><option value="America/Los_Angeles">Pacific — Los Angeles</option><option value="UTC" selected>UTC</option></select>
+<label for="wizard-preset">Hours preset</label><select id="wizard-preset"><option value="custom">Custom date/time range</option><option value="morning">Morning · 09:00–12:00</option><option value="afternoon">Afternoon · 13:00–16:00</option></select>
+<label for="wizard-start">Start (included)</label><input id="wizard-start" name="start" type="datetime-local" step="1" required>
+<label for="wizard-end">End (excluded)</label><input id="wizard-end" name="end" type="datetime-local" step="1" required>
+<p class="small muted">Use the study's clock times. A preset uses the start date for one morning or afternoon. A custom range includes all hours between its endpoints, not repeated daily study hours. Maximum seven elapsed days. The local exporter validates daylight-saving changes and rejects ambiguous or nonexistent times.</p>
+</fieldset>
+<fieldset><legend>3. Local files</legend>
+<p class="small muted">Relative paths are resolved from the extracted Explorer source folder where you run the script. These are Windows paths, not cPanel paths.</p>
+<label for="wizard-config">Private exporter config path</label><input id="wizard-config" name="config" type="text" value="local-config.json" required maxlength="1024">
+<label for="wizard-catalog">Reviewed map / POI catalog path</label><input id="wizard-catalog" name="catalog" type="text" value="catalog.json" required maxlength="1024">
+<label for="wizard-journal">Explorer journal folder (optional)</label><input id="wizard-journal" name="journal" type="text" placeholder="D:/Minecraft/plugins/WHIMC-Explorer/journal" maxlength="1024">
+<p class="small muted">Include the saved journal for NPC interactions and recorded teleport breaks. Without it, those sources are unavailable. The script does not assert complete capture.</p>
+<label for="wizard-roster">Verified account roster path (optional)</label><input id="wizard-roster" name="roster" type="text" placeholder="private-data/participant-roster.json" maxlength="1024">
+<label for="wizard-output">Output base JSON filename or path</label><input id="wizard-output" name="output" type="text" placeholder="week-1-morning.json" required maxlength="1024">
+<p class="small muted">For selected learners, each filename gains the friendly name and UUID automatically. Use an existing folder and a new base filename. Existing files are never overwritten. Never enter passwords here.</p>
+</fieldset>
+<button type="submit" class="button">Generate export script</button>
+</form>
+<p id="wizard-message" role="status" aria-live="polite"></p>
+<div id="wizard-result" hidden>
+<h3>4. Run locally, then upload</h3>
+<p>Open PowerShell in your extracted Explorer source folder with its prepared <code>.venv</code>. Copy and paste the complete script, or save the download there and run <code>.\export-session.ps1</code>. If your computer blocks script files, paste the reviewed script into PowerShell instead of changing its execution policy.</p>
+<p>Use the updated source package containing <code>tools/export_batch.py</code>. The batch prompts once for the database password, then exports one JSON per selected learner. Failed learners are reported separately; successful exports remain available. Choose all resulting <strong>.json</strong> files in the upload form below. Do not upload the <strong>.ps1</strong> script.</p>
+<div class="wizard-actions"><button type="button" class="button" id="wizard-copy">Copy script</button><button type="button" class="secondary" id="wizard-download">Download .ps1</button></div>
+<label for="wizard-script">Generated PowerShell script</label><textarea id="wizard-script" rows="18" readonly spellcheck="false"></textarea>
+</div>
+</section>

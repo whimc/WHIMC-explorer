@@ -9,6 +9,7 @@ from .storage import store_bundle
 import json
 from django.utils import timezone
 from .forms import StudyLabelsForm
+from .learners import learner_choices
 
 
 @require_http_methods(['GET', 'POST'])
@@ -40,12 +41,17 @@ def import_bundle(request):
             if upload is None or upload.size > settings.MAX_BUNDLE_BYTES:
                 raise ValueError("Choose one Explorer JSON bundle, up to 8 MB")
             record, created = store_bundle(upload.read(settings.MAX_BUNDLE_BYTES + 1), request.evaluator)
+            if request.headers.get('Accept') == 'application/json':
+                return JsonResponse({'created':created, 'url':reverse('index')+'?session='+str(record.id)})
             return redirect(reverse("index") + "?session=" + str(record.id))
         except (ValueError, TypeError, RecursionError):
             error = "This bundle is invalid or exceeds the import limits. Validate it with the Windows exporter."
         except (OperationalError, IntegrityError):
             error = "The database is busy. Please retry the import; repeated bundles are safe."
-    return render(request, "portal/import.html", {"error": error}, status=400 if error else 200)
+    if error and request.headers.get('Accept') == 'application/json':
+        return JsonResponse({'error':error},status=400)
+    learners, roster_message = learner_choices()
+    return render(request, "portal/import.html", {"error": error,'learners':learners,'roster_message':roster_message}, status=400 if error else 200)
 
 
 @require_GET

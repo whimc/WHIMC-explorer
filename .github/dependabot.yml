@@ -8,6 +8,10 @@ updates:
     directory: /web
     schedule:
       interval: weekly
+    # Keep receiving 5.2 LTS patches; review a framework upgrade separately.
+    ignore:
+      - dependency-name: django
+        versions: [">=5.3"]
   - package-ecosystem: pip
     directory: /tools
     schedule:
