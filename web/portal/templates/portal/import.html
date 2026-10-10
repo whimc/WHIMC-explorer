@@ -1,7 +1,8 @@
 {% load static %}<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Import session · WHIMC Explorer</title><link rel="stylesheet" href="{% static 'portal/explorer.css' %}"></head><body>
 <header><a class="brand" href="{% url 'index' %}"><span class="brand-mark">W</span>WHIMC <b>Explorer</b></a><span>{{ request.evaluator }}</span></header>
 <main class="import-page"><a href="{% url 'index' %}">← Session library</a><div class="eyebrow">AFTER-SESSION IMPORT</div><h1>Bring the session into view.</h1><p class="muted">Choose the JSON bundle created by the Windows exporter. Its path samples, map catalog and recorded interactions stay together.</p>
-<details class="export-help" open>
+{% include 'portal/export_wizard.html' %}
+<details class="export-help">
 <summary>How to generate a file to upload</summary>
 <p>Run the exporter on the Windows Minecraft server, or a Windows computer with access to its records. This website displays uploaded bundles; it cannot fetch the server's local database or journal files.</p>
 <ol>
@@ -19,4 +20,4 @@ Enter the database password at the local prompt. The output is saved in the curr
 <p><a href="https://github.com/whimc/WHIMC-explorer#readme">Full setup and export guide</a> · <a href="https://github.com/whimc/WHIMC-explorer/blob/main/docs/TIMEZONES.md">Study timezone guide</a></p>
 </details>
 {% if error %}<div class="notice" role="alert">{{ error }}</div>{% endif %}
-<form method="post" enctype="multipart/form-data">{% csrf_token %}<label for="bundle">Explorer session bundle</label><input id="bundle" name="bundle" type="file" accept=".json,application/json" required><p class="muted small">One player and time window · Maximum 8 MB · Reimporting the same bundle does not duplicate it.</p><button type="submit" class="button">Import session</button></form></main></body></html>
+<form method="post" enctype="multipart/form-data">{% csrf_token %}<label for="bundle">Explorer session bundle</label><input id="bundle" name="bundle" type="file" accept=".json,application/json" required><p class="muted small">One player and time window · Maximum 8 MB · Reimporting the same bundle does not duplicate it.</p><button type="submit" class="button">Import session</button></form></main><script src="{% static 'portal/export-wizard.js' %}" defer></script></body></html>
