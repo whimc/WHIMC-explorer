@@ -1,5 +1,7 @@
 # WHIMC Explorer
 
+![WHIMC Explorer session review showing a learner path, map, POI visits, and export controls](docs/images/session-review.png)
+
 Private, after-session path evaluation. Position Tracker remains the movement source; Path Generator stays archived and unchanged. No EC2 service, AWS SDK, Lambda, API Gateway, or public Minecraft database connection is required.
 
 Repository: [whimc/WHIMC-explorer](https://github.com/whimc/WHIMC-explorer).
@@ -16,8 +18,7 @@ exporter locally and uploads the completed bundles. MySQL stays private.
 2. **Minecraft server:** Position Tracker records movement in MySQL; Explorer records
    enrolled learners' session events/NPC clicks in its journal. Existing Observations
    and Science Tools plugins can log their evidence to MySQL.
-3. **After the study, on the website:** an authorized importer opens **Import session
-   → Request server exports**, chooses the server, named learners, world, study
+3. **After the study, on the website:** an authorized importer clicks the gold **Request exports** button on the home page, chooses the server, named learners, world, study
    timezone and completed start/end times, then supplies study/location/session names.
    Queue morning (09:00–12:00) and afternoon (13:00–16:00) separately. Wait for pending
    plugin writes to finish before requesting results.
@@ -33,6 +34,50 @@ not run scripts for this workflow. cPanel runs no background service and has no 
 password. Manual export/upload remains available through the
 [export script wizard](docs/EXPORT-WIZARD.md) if website exports are disabled.
 GitHub release automation updates software downloads, not research data.
+
+## Camp imports: morning and afternoon groups
+
+After the administrator completes [website export setup](docs/WEBSITE-EXPORTS.md),
+camp staff can collect results without running a script:
+
+1. Sign in to Explorer with an authorized importer NetID and click the gold
+   **Request exports** button next to **Import session**.
+2. Choose the connected server, check the learners by friendly name, and choose the
+   exact Minecraft world. Repeat for other worlds as needed.
+3. Enter a **study** shared across the camp (for example, `QRF July 2026`), a
+   **location** (for example, `Versant`), and a **session name** such as
+   `Monday morning` or `Monday afternoon`.
+4. Choose the camp's timezone, then enter the completed session's start and end.
+   For example: Monday 09:00–12:00 in `America/New_York`, then a separate request
+   for Monday 13:00–16:00. Repeat for each day. **A Monday-morning to Friday-noon
+   range is one continuous interval; it also includes afternoons and nights.**
+   The Minecraft host's timezone and learners' computer clocks do not choose the
+   timezone for these entered times. See [timezones](docs/TIMEZONES.md).
+5. Submit once and leave Minecraft running. The plugin processes one learner per
+   polling cycle; click **Refresh status** to check progress. Completed exports are
+   imported automatically. A pending request has not finished; a failed request
+   needs its underlying error corrected before requesting again.
+6. Open the completed sessions, check map alignment and evidence, then use
+   **Compare paths** to select the study, date range, world, and learners together.
+   See [study labels](docs/STUDIES.md) and [comparisons](docs/COMPARISON.md).
+
+For existing exported JSON files, use **Import session** and select multiple learner
+files together. The [manual export wizard](docs/EXPORT-WIZARD.md) is the fallback
+when the server is not paired with the website. Historical positions can be exported
+if still retained in MySQL; old NPC interactions cannot be reconstructed if they
+were not recorded. Split requests that exceed the export limits listed below.
+
+## Why NetID sign-in?
+
+This deployment was requested as a private evaluator tool, with Illinois NetIDs for
+all evaluators. Shibboleth supplies university authentication; Explorer's NetID
+allowlist controls access, and its importer list grants upload/export-request
+permission. All allowlisted evaluators share the project library. This access choice
+is separate from the project's IRB classification of its logs.
+
+The worker uses its own server credential over HTTPS rather than an interactive
+NetID login. Public viewing would require an intentional application/access-policy
+change; removing the Apache login block alone does not enable public access.
 
 ## Documentation
 
