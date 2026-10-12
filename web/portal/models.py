@@ -2,6 +2,14 @@ import uuid
 from django.db import models
 
 
+class Collection(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=128)
+    sessions = models.ManyToManyField('SessionBundle', related_name='collections', blank=True)
+    created_by = models.CharField(max_length=128)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
 class ExportServer(models.Model):
     id = models.CharField(primary_key=True, max_length=64)
     last_seen = models.DateTimeField()

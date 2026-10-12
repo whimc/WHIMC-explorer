@@ -5,9 +5,9 @@ import math
 from uuid import UUID
 from django.db.models import Max
 from django.http import JsonResponse
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.views.decorators.http import require_GET
-from .models import SessionBundle
+from .models import SessionBundle, Collection
 from explorer_core.time_windows import parse_time, daily_intervals, in_intervals, zone
 
 
@@ -43,15 +43,22 @@ def page(request):
 
 @require_GET
 def options(request):
+    query = SessionBundle.objects.all()
+    if request.GET.get('collection'):
+        try:
+            collection_id = UUID(request.GET['collection'])
+        except ValueError:
+            return JsonResponse({'error': 'Invalid collection.'}, status=400)
+        query = get_object_or_404(Collection, pk=collection_id).sessions.all()
     if not any(key in request.GET for key in ('start','end','local_start','local_end')):
-        return JsonResponse({'latest': SessionBundle.objects.aggregate(latest=Max('end'))['latest'],
-                             'studies': list(SessionBundle.objects.exclude(study='').order_by('study').values_list('study', flat=True).distinct()),
-                             'locations': list(SessionBundle.objects.exclude(location='').order_by('location').values_list('location', flat=True).distinct())})
+        return JsonResponse({'latest': query.aggregate(latest=Max('end'))['latest'],
+                             'studies': list(query.exclude(study='').order_by('study').values_list('study', flat=True).distinct()),
+                             'locations': list(query.exclude(location='').order_by('location').values_list('location', flat=True).distinct())})
     try:
         start, end, intervals, selected = schedule(request)
     except ValueError as exc:
         return JsonResponse({'error': str(exc)}, status=400)
-    query = SessionBundle.objects.filter(start__lt=end, end__gt=start).order_by('-start', 'id')
+    query = query.filter(start__lt=end, end__gt=start).order_by('-start', 'id')
     if request.GET.get('server'):
         query = query.filter(server_id=request.GET['server'])
     for key in ('study', 'location'):

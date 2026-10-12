@@ -67,6 +67,37 @@ when the server is not paired with the website. Historical positions can be expo
 if still retained in MySQL; old NPC interactions cannot be reconstructed if they
 were not recorded. Split requests that exceed the export limits listed below.
 
+## Save a camp or team, compare paths, and remove sessions
+
+Open **Camps & sessions** from the home-page header. Click **Create camp or team**,
+name it, check the imported sessions that belong together, and save. A session may
+belong to more than one collection. **Edit members / rename** changes membership
+without deleting the underlying sessions. Collections are explicit saved selections;
+new exports are not added automatically.
+
+Use a collection's **Compare paths** link to restrict the comparison session picker
+to that collection, then choose the dates, world and learners. Existing comparison
+limits still apply: one server, up to eight players and 20 imported sessions.
+
+![Camp learners compared on the same calibrated world map](docs/images/camp-comparison.png)
+
+**Download camp ZIP** saves all member session JSON files plus a manifest containing
+the collection name and current study labels. To restore the evidence, unzip it and
+upload the `explorer-*.json` files through **Import session**; do not upload the
+manifest. Recreate collection membership and any subsequently edited study labels
+using the manifest. ZIP upload/automatic collection restoration is not implemented.
+
+To delete an imported session, use **Remove session…** in **Camps & sessions**,
+download its JSON first if needed, and confirm. This permanently deletes that copy
+from the website and all collections, and frees its library quota. Minecraft MySQL
+records and Explorer journals are unaffected. A retained JSON can be imported again.
+Only users with import permission can manage collections or delete sessions; all
+signed-in users can view and download them. Shared-password users have import permission.
+
+Deployment of this feature requires `python manage.py migrate`,
+`python manage.py collectstatic --noinput`, and an application restart after uploading
+updated web files. No Minecraft plugin change is needed.
+
 ## Why NetID sign-in?
 
 This deployment was requested as a private evaluator tool, with Illinois NetIDs for
