@@ -21,11 +21,11 @@ SHARED_PASSWORD_HASH = os.environ.get("EXPLORER_SHARED_PASSWORD_HASH", "")
 if AUTH_MODE not in {"netid", "password"}:
     raise ImproperlyConfigured("EXPLORER_AUTH_MODE must be netid or password")
 if AUTH_MODE == "password":
-    from django.contrib.auth.hashers import identify_hasher
-    try:
-        identify_hasher(SHARED_PASSWORD_HASH)
-    except ValueError:
-        raise ImproperlyConfigured("Set EXPLORER_SHARED_PASSWORD_HASH to a Django password hash")
+    # Never call settings-dependent hash helpers while this module is importing:
+    # they recursively initialize LazySettings with an incomplete app list.
+    import re
+    if not re.fullmatch(r"pbkdf2_sha256\$[1-9][0-9]*\$[A-Za-z0-9]+\$[A-Za-z0-9+/]{43}=", SHARED_PASSWORD_HASH):
+        raise ImproperlyConfigured("Set EXPLORER_SHARED_PASSWORD_HASH to a Django PBKDF2-SHA256 password hash")
 if not DEMO and AUTH_MODE == "netid" and (not NETIDS or not IMPORTERS.issubset(NETIDS)):
     raise ImproperlyConfigured("Set EXPLORER_NETIDS; EXPLORER_IMPORTERS must be a subset")
 if any(not s.endswith("@illinois.edu") or len(s.split("@")) != 2 for s in NETIDS):
