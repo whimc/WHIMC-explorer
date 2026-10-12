@@ -81,6 +81,8 @@ change; removing the Apache login block alone does not enable public access.
 
 ## Documentation
 
+- [Optional shared-password access and cPanel switch-over](docs/SHARED-PASSWORD.md)
+
 - [Website-initiated exports: pairing, setup, operation and troubleshooting](docs/WEBSITE-EXPORTS.md)
 - [Manual export script wizard and multi-learner uploads](docs/EXPORT-WIZARD.md)
 

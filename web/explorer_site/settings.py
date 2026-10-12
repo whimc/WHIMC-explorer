@@ -16,7 +16,17 @@ if not ALLOWED_HOSTS or "*" in ALLOWED_HOSTS:
     raise ImproperlyConfigured("Set exact EXPLORER_ALLOWED_HOSTS; wildcards are not allowed")
 NETIDS = frozenset(s.strip().lower() for s in os.environ.get("EXPLORER_NETIDS", "").split(",") if s.strip())
 IMPORTERS = frozenset(s.strip().lower() for s in os.environ.get("EXPLORER_IMPORTERS", "").split(",") if s.strip())
-if not DEMO and (not NETIDS or not IMPORTERS.issubset(NETIDS)):
+AUTH_MODE = os.environ.get("EXPLORER_AUTH_MODE", "netid")
+SHARED_PASSWORD_HASH = os.environ.get("EXPLORER_SHARED_PASSWORD_HASH", "")
+if AUTH_MODE not in {"netid", "password"}:
+    raise ImproperlyConfigured("EXPLORER_AUTH_MODE must be netid or password")
+if AUTH_MODE == "password":
+    from django.contrib.auth.hashers import identify_hasher
+    try:
+        identify_hasher(SHARED_PASSWORD_HASH)
+    except ValueError:
+        raise ImproperlyConfigured("Set EXPLORER_SHARED_PASSWORD_HASH to a Django password hash")
+if not DEMO and AUTH_MODE == "netid" and (not NETIDS or not IMPORTERS.issubset(NETIDS)):
     raise ImproperlyConfigured("Set EXPLORER_NETIDS; EXPLORER_IMPORTERS must be a subset")
 if any(not s.endswith("@illinois.edu") or len(s.split("@")) != 2 for s in NETIDS):
     raise ImproperlyConfigured("Use full Illinois NetID identities, e.g. netid@illinois.edu")
@@ -60,3 +70,5 @@ DATA_UPLOAD_MAX_NUMBER_FIELDS = 70  # Up to 50 learner checkboxes plus window/la
 MAX_BUNDLE_BYTES = 8 * 1024 * 1024
 MAX_TOTAL_BUNDLE_BYTES = 512 * 1024 * 1024
 MAX_STORED_BUNDLES = 1000
+
+CACHES = {"default": {"BACKEND": "django.core.cache.backends.filebased.FileBasedCache", "LOCATION": str(DATA_DIR / "login-throttle")}}

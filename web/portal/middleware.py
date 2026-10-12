@@ -25,6 +25,15 @@ class EvaluatorAccess:
                 return HttpResponseForbidden("Demo mode is only available on loopback.")
             request.evaluator = "local-demo"
             request.can_import = False  # CLI seeds synthetic data; no real uploads in demo mode.
+        elif settings.AUTH_MODE == "password":
+            from .password_access import authenticated
+            from django.shortcuts import redirect
+            request.evaluator = "shared-access"
+            request.can_import = authenticated(request)
+            if not request.can_import and request.path_info not in {"/login/", "/logout/"}:
+                response = redirect('login')
+                response['Cache-Control'] = 'no-store'
+                return response
         else:
             # This is the WSGI server variable set by Apache/mod_shib, NOT an HTTP header.
             identity = request.META.get("REMOTE_USER", "").strip().lower()

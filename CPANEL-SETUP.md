@@ -46,6 +46,8 @@ EXPLORER_STATIC_ROOT=/home/ACCOUNT/public_html/explorer/static
 
 Generate the secret privately: `python -c "import secrets; print(secrets.token_urlsafe(64))"`. Save in cPanel, never source control. Identity lists contain comma-separated full NetID identities. Production refuses startup without a secret, host and allowlist. Only server-supplied WSGI `REMOTE_USER` is trusted.
 
+For shared-password access instead of NetID, follow [the switch-over guide](docs/SHARED-PASSWORD.md). Do not apply the NetID block below in password mode.
+
 ## NetID protection
 
 Merge `deploy/.htaccess.example` into the **new Explorer directory's** generated configuration. Replace its fail-closed placeholder with exact NetIDs. Preserve Passenger directives. Protect all Explorer routes, including API, imports and exports. If enabling website exports, follow the separate guide's exact two-path machine exception; those paths require server credentials in Python instead of NetID.

@@ -1,9 +1,11 @@
 from django.urls import path
 from portal import views
 from portal import comparison
-from portal import export_queue
+from portal import export_queue, password_access
 
 urlpatterns = [
+    path("login/", password_access.login, name="login"),
+    path("logout/", password_access.logout, name="logout"),
     path('request-exports/', export_queue.page, name='request-exports'),
     path('api/worker/poll/', export_queue.poll, name='worker-poll'),
     path('api/worker/result/', export_queue.result, name='worker-result'),
