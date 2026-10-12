@@ -33,3 +33,17 @@ call_command('collectstatic', interactive=False, dry_run=True, verbosity=0)
                                     cwd=Path(__file__).resolve().parents[1],
                                     capture_output=True, text=True, timeout=30)
             self.assertEqual(result.returncode, 0, result.stderr)
+
+            hash_path = Path(folder) / 'access-hash.txt'
+            hash_path.write_text(env['EXPLORER_SHARED_PASSWORD_HASH'], encoding='utf-8')
+            env['EXPLORER_SHARED_PASSWORD_HASH_FILE'] = str(hash_path)
+            env['EXPLORER_SHARED_PASSWORD_HASH'] = 'altered-environment'
+            result = subprocess.run([sys.executable, '-c', code], env=env,
+                                    cwd=Path(__file__).resolve().parents[1],
+                                    capture_output=True, text=True, timeout=30)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            hash_path.write_text('invalid', encoding='utf-8')
+            result = subprocess.run([sys.executable, '-c', code], env=env,
+                                    cwd=Path(__file__).resolve().parents[1],
+                                    capture_output=True, text=True, timeout=30)
+            self.assertNotEqual(result.returncode, 0)

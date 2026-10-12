@@ -21,6 +21,16 @@ SHARED_PASSWORD_HASH = os.environ.get("EXPLORER_SHARED_PASSWORD_HASH", "")
 if AUTH_MODE not in {"netid", "password"}:
     raise ImproperlyConfigured("EXPLORER_AUTH_MODE must be netid or password")
 if AUTH_MODE == "password":
+    hash_file = os.environ.get("EXPLORER_SHARED_PASSWORD_HASH_FILE", "")
+    if hash_file:
+        path = Path(hash_file)
+        if not path.is_absolute() or "public_html" in [part.lower() for part in path.resolve().parts]:
+            raise ImproperlyConfigured("Password hash file must be an absolute private path outside public_html")
+        try:
+            with path.open("r", encoding="utf-8-sig") as stream:
+                SHARED_PASSWORD_HASH = stream.read(1025).strip()
+        except (OSError, UnicodeError):
+            raise ImproperlyConfigured("Cannot read the configured private password hash file") from None
     # Never call settings-dependent hash helpers while this module is importing:
     # they recursively initialize LazySettings with an incomplete app list.
     import re

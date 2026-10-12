@@ -50,3 +50,14 @@ instead of individual NetIDs. Do not commit deployment hashes or passwords.
 
 To restore NetID access, restore the prior Shibboleth authorization block, set
 `EXPLORER_AUTH_MODE=netid`, retain the NetID allowlists and restart the app.
+
+## If the hosting environment alters the hash
+
+Set `EXPLORER_SHARED_PASSWORD_HASH_FILE` to an absolute path outside `public_html`,
+for example `/home/whimcproject/whimc-explorer-private/access-password.hash`.
+Store the complete Django PBKDF2-SHA256 hash in that UTF-8 text file with permissions
+0600. The file setting takes precedence over `EXPLORER_SHARED_PASSWORD_HASH` and
+fails closed if unreadable or invalid. This avoids passing `$`-delimited hashes
+through hosting environment wrappers. Generate the hash directly in Python and
+write it to the private file; never upload the file into the web/static directories.
+Restart Passenger after changing it. The CLI also needs the file-path variable.
