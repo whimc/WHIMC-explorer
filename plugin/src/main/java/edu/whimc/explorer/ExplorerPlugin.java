@@ -37,7 +37,8 @@ public final class ExplorerPlugin extends JavaPlugin implements Listener {
             try {
                 websiteExports = new WebsiteExports(getConfig().getString("website-exports.python", ""),
                     getConfig().getString("website-exports.script", ""), getConfig().getString("website-exports.config", ""),
-                    getConfig().getInt("website-exports.poll-seconds", 60), message -> getLogger().warning(message));
+                    getConfig().getInt("website-exports.poll-seconds", 60), message -> getLogger().warning(message),
+                    message -> getLogger().info(message));
             } catch (IllegalArgumentException e) {
                 getLogger().severe("Website exports disabled: " + e.getMessage());
             }
