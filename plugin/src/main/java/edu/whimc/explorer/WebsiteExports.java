@@ -16,10 +16,10 @@ final class WebsiteExports implements AutoCloseable {
     private Process process;
     private boolean closed;
     private volatile String status = "waiting";
-    private final Consumer<String> log;
+    private final ExportCycleReporter reporter;
 
-    WebsiteExports(String python, String script, String config, int interval, Consumer<String> log) {
-        this.log = log;
+    WebsiteExports(String python, String script, String config, int interval, Consumer<String> log, Consumer<String> info) {
+        this.reporter = new ExportCycleReporter(log, info, System::nanoTime);
         for (String value : new String[]{python, script, config}) {
             Path path = Path.of(value);
             if (!path.isAbsolute() || !Files.isRegularFile(path))
@@ -46,12 +46,12 @@ final class WebsiteExports implements AutoCloseable {
             } else {
                 status = child.exitValue() == 0 ? "last cycle OK" : "connection/configuration error; retry pending";
             }
-            if (!status.equals("last cycle OK")) log.accept("Website exports: " + status + ". See docs/WEBSITE-EXPORTS.md.");
+            reporter.report(status);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         } catch (IOException e) {
             status = "could not start Python";
-            log.accept("Website exports: could not start configured Python executable.");
+            reporter.report(status);
         } finally {
             if (child != null && child.isAlive()) stopTree(child);
             synchronized (this) { process = null; }

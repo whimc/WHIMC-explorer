@@ -209,3 +209,13 @@ for source failures. Keep both the web and source releases on the same version.
 
 Live cPanel worker routing and plugin-managed production export are deployment
 checks, not established by unit tests. Validate them on the test server first.
+
+## Console warnings during an outage
+
+The plugin keeps polling at the configured interval. It logs a failure immediately,
+then repeats the same warning at most every 15 minutes. A changed failure is reported
+immediately. After a successful cycle it logs one recovery message at INFO level.
+`/whimcexplorer status` always shows the current result, even between reminders.
+This controls log volume; connection/configuration errors still require correction.
+If website exports are intentionally unused, set `website-exports.enabled: false`
+in the plugin configuration and restart Minecraft. Local capture is independent.
