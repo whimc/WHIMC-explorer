@@ -1,9 +1,16 @@
 from django.urls import path
 from portal import views
 from portal import comparison
-from portal import export_queue
+from portal import export_queue, password_access, library
 
 urlpatterns = [
+    path('library/', library.page, name='library'),
+    path('collections/new/', library.edit, name='collection-create'),
+    path('collections/<uuid:collection_id>/edit/', library.edit, name='collection-edit'),
+    path('collections/<uuid:collection_id>/download/', library.download, name='collection-download'),
+    path('sessions/<uuid:bundle_id>/remove/', library.remove, name='session-remove'),
+    path("login/", password_access.login, name="login"),
+    path("logout/", password_access.logout, name="logout"),
     path('request-exports/', export_queue.page, name='request-exports'),
     path('api/worker/poll/', export_queue.poll, name='worker-poll'),
     path('api/worker/result/', export_queue.result, name='worker-result'),

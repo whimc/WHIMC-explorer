@@ -1,0 +1,7 @@
+{% load static %}
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sign in · WHIMC Explorer</title><link rel="stylesheet" href="{% static 'portal/explorer.css' %}"><link rel="stylesheet" href="{% static 'portal/game.css' %}"></head>
+<body><header><a class="brand" href="{% url 'index' %}"><span class="brand-mark">W</span>WHIMC Explorer</a></header>
+<main class="import-page"><h1>Enter Explorer</h1><p>Enter the shared password to review sessions and request exports.</p>
+{% if error %}<p class="notice" role="alert">{{ error }}</p>{% endif %}
+<form method="post">{% csrf_token %}<label for="password">Password</label><input id="password" name="password" type="password" autocomplete="current-password" maxlength="256" required autofocus><p><button class="button" type="submit">Enter Explorer</button></p></form></main></body></html>

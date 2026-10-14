@@ -19,6 +19,8 @@
   }
   function timezoneNote(){ $('timezone').textContent=`All entered dates and hours use ${$('study-timezone').value}, independent of this computer. Changing timezone keeps the entered clock times. Daily hours apply to each day in the range. End times are excluded.`; }
   async function read(url) {
+    const collection = new URLSearchParams(location.search).get('collection');
+    if (collection) { const scoped = new URL(url, location.href); scoped.searchParams.set('collection', collection); url = scoped.href; }
     const response = await fetch(url, {credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'}});
     if (!(response.headers.get('content-type') || '').includes('application/json')) throw new Error('Could not read comparison data. Refresh and sign in again.');
     const data = await response.json(); if (!response.ok) throw new Error(data.error || 'Could not load comparison data.'); return data;

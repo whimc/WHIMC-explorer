@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>edu.whimc</groupId>
   <artifactId>WHIMC-Explorer</artifactId>
-  <version>0.8.1</version>
+  <version>0.10.0</version>
   <name>WHIMC Explorer</name>
   <description>Local session and interaction capture for WHIMC Explorer</description>
   <properties>
