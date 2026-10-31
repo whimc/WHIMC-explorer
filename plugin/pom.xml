@@ -8,7 +8,7 @@
   <properties>
     <maven.compiler.release>25</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <paper.version>26.2.build.132-stable</paper.version>
+    <paper.version>26.3.build.227-stable</paper.version>
     <citizens.version>2.0.44-20261008.185736-5</citizens.version>
     <minecraft.api>26.2</minecraft.api>
     <artifact.suffix>-mc26.x</artifact.suffix>
